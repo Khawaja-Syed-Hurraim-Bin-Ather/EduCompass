@@ -271,6 +271,9 @@ async function callGeminiAPI(prompt: string, modelName: string): Promise<LLMResp
     modelName,
     LLM_CONFIG.modelFallback,
     'gemini-3.5-flash-lite',
+    'gemini-3.5-flash',
+    'gemini-flash-latest',
+    'gemini-flash-lite-latest',
     'gemini-3.8-flash',
   ])).filter(Boolean);
 

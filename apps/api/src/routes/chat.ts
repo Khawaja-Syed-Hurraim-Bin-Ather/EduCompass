@@ -4,6 +4,7 @@ import { apiError } from '@educompass/shared';
 import { supabaseAdmin } from '../lib/supabase';
 import { generateChatResponse, LLM_CONFIG } from '../lib/llm-gateway';
 import { faqMatcher } from '../lib/faq-matcher';
+import { resolveFacultyQuery, detectLanguage, checkStress } from '../lib/entity-resolver';
 
 export const chatRouter = Router();
 
@@ -72,18 +73,31 @@ const STATIC_PRELOADED_ANSWERS: PreloadedItem[] = [
 
 // ─── Layer 1: Preloaded Answer Matcher ────────────────────────────────────────
 
+// In-memory cache for Layer 1 DB answers (Bug F7 fix: 60s TTL)
+let dbAnswersCache: Array<{ question_pattern: string; answer_text: string }> | null = null;
+let dbAnswersCacheTime = 0;
+
 async function matchLayer1Preloaded(query: string): Promise<string | null> {
   const normalizedQuery = query.toLowerCase().trim();
   const queryTokens = normalizedQuery.replace(/[^\w\s]/g, '').split(/\s+/).filter(Boolean);
 
-  // 1. Try DB chatbot_answers
+  // 1. Try DB chatbot_answers (Rule #2 & Bug F6: Only active rows)
   try {
-    const { data: dbAnswers } = await supabaseAdmin
-      .from('chatbot_answers')
-      .select('question_pattern, answer_text, confidence_threshold');
+    const now = Date.now();
+    if (!dbAnswersCache || now - dbAnswersCacheTime > 60000) {
+      const { data: dbAnswers } = await supabaseAdmin
+        .from('chatbot_answers')
+        .select('question_pattern, answer_text, confidence_threshold')
+        .eq('is_active', true);
 
-    if (dbAnswers && dbAnswers.length > 0) {
-      for (const item of dbAnswers) {
+      if (dbAnswers) {
+        dbAnswersCache = dbAnswers;
+        dbAnswersCacheTime = now;
+      }
+    }
+
+    if (dbAnswersCache && dbAnswersCache.length > 0) {
+      for (const item of dbAnswersCache) {
         const patterns = item.question_pattern.split(',').map((p: string) => p.trim().toLowerCase());
         const match = patterns.some((p: string) => {
           if (p.length <= 3) return queryTokens.includes(p) || normalizedQuery === p;
@@ -129,19 +143,46 @@ const STOP_WORDS = new Set([
 ]);
 
 async function retrieveContext(query: string): Promise<{ contextText: string; sources: RetrievalSource[] }> {
+  const sources: RetrievalSource[] = [];
+  const snippets: string[] = [];
+
+  // 1. Direct course code extraction (e.g. "CS-326", "cs326", "CS 326")
+  const courseCodeMatch = query.match(/\b([A-Za-z]{2})\s*[-_]?\s*(\d{3})\b/);
+  if (courseCodeMatch) {
+    const formattedCode = `${courseCodeMatch[1].toUpperCase()}-${courseCodeMatch[2]}`;
+    const normCode = `${courseCodeMatch[1].toLowerCase()}${courseCodeMatch[2]}`;
+    try {
+      const { data: matchedCourses } = await supabaseAdmin
+        .from('courses')
+        .select('code, title, credits, semester, category')
+        .or(`code.eq.${formattedCode},code_normalized.eq.${normCode}`)
+        .limit(2);
+
+      if (matchedCourses && matchedCourses.length > 0) {
+        for (const c of matchedCourses) {
+          sources.push({
+            title: `${c.code}: ${c.title}`,
+            type: 'course',
+            detail: `Semester ${c.semester}, ${c.credits} credit hours (${c.category})`,
+          });
+          snippets.push(`Course: ${c.code} - ${c.title} (${c.credits} Credit Hours, Semester ${c.semester}, Category: ${c.category})`);
+        }
+      }
+    } catch (err) {
+      console.warn('[Chat-Route] Direct course lookup error:', err);
+    }
+  }
+
   const allWords = query
     .toLowerCase()
-    .replace(/[^\w\s]/g, '')
+    .replace(/[^\w\s-]/g, '')
     .split(/\s+/)
     .filter((w) => w.length >= 2);
 
   const keywords = allWords.filter((w) => !STOP_WORDS.has(w) && w.length >= 3);
   const searchTerms = keywords.length > 0 ? keywords : allWords.filter((w) => w.length >= 3);
 
-  const sources: RetrievalSource[] = [];
-  const snippets: string[] = [];
-
-  if (searchTerms.length === 0) {
+  if (searchTerms.length === 0 && snippets.length === 0) {
     return { contextText: '', sources: [] };
   }
 
@@ -151,7 +192,7 @@ async function retrieveContext(query: string): Promise<{ contextText: string; so
       const { data: courses } = await supabaseAdmin
         .from('courses')
         .select('code, title, credits, semester, category')
-        .or(`title.ilike.%${term}%,code.ilike.%${term}%`)
+        .or(`title.ilike.%${term}%,code.ilike.%${term}%,code_normalized.ilike.%${term}%`)
         .limit(3);
 
       if (courses && courses.length > 0) {
@@ -280,13 +321,40 @@ chatRouter.post('/', async (req: Request, res: Response) => {
   const { message, preferOffline } = parsed.data;
   const userId = req.user?.id || null;
   const disclaimer = 'Guidance estimates, not official university decisions.';
+  const detectedLang = detectLanguage(message);
+  const stressMotivation = checkStress(message, detectedLang);
+
+  // ─── FACULTY RESOLVER (Layer 2 / DB Verified Direct Sentence) ───────────────
+  const facultyResult = await resolveFacultyQuery(message);
+  if (facultyResult.matched && facultyResult.renderedAnswer) {
+    const finalAnswer = stressMotivation 
+      ? `${stressMotivation}\n\n${facultyResult.renderedAnswer}` 
+      : facultyResult.renderedAnswer;
+
+    res.json({
+      data: {
+        answer: finalAnswer,
+        layer: 2,
+        source: 'faculty_directory',
+        source_type: 'database',
+        sources: facultyResult.professor ? [{
+          title: facultyResult.professor.name,
+          type: 'professor',
+          detail: `${facultyResult.professor.rank || 'Faculty'} · ${facultyResult.professor.department}`
+        }] : [],
+        disclaimer,
+      },
+    });
+    return;
+  }
 
   // ─── LAYER 1: Preloaded Verified Answers (Instant, 0 latency, 0 tokens) ─────
   const preloaded = await matchLayer1Preloaded(message);
   if (preloaded) {
+    const finalAnswer = stressMotivation ? `${stressMotivation}\n\n${preloaded}` : preloaded;
     res.json({
       data: {
-        answer: preloaded,
+        answer: finalAnswer,
         layer: 1,
         source: 'preloaded_official',
         source_type: 'database',
@@ -367,8 +435,8 @@ chatRouter.post('/', async (req: Request, res: Response) => {
   }
 
   // ─── LAYER 3: LLM Generation ────────────────────────────────────────────────
-  const defaultContext = 'NED University of Engineering & Technology, Department of Computer & Information Systems Engineering (CISE). Program: BE Computer Systems Engineering (136 total credit hours over 8 semesters, minimum passing grade D / 1.0, minimum graduation CGPA 2.00, regular credit ceiling 18 CH, overload up to 21 CH with Chairman approval. Retake policy: higher grade replaces earlier grade in CGPA. FYP: CS-406 in semesters 7 and 8).';
-  const effectiveContext = contextText.length > 0 ? contextText : defaultContext;
+  const defaultContext = 'NED University of Engineering & Technology, Department of Computer & Information Systems Engineering (CISE). Program: BE Computer Systems Engineering (136 total credit hours over 8 semesters, minimum passing grade D / 1.0, minimum graduation CGPA 2.00, regular credit ceiling 18 CH, overload up to 21 CH with Chairman approval. Retake policy: higher grade replaces earlier grade in CGPA. FYP: CS-406 in semesters 7 and 8). If the student writes in Roman Urdu, reply in polite, clear Roman Urdu.';
+  const effectiveContext = contextText.length > 0 ? `${defaultContext}\n\nRetrieved departmental records:\n${contextText}` : defaultContext;
 
   try {
     const llmResult = await generateChatResponse({

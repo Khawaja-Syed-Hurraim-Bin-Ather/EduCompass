@@ -470,7 +470,17 @@ routes['/assistant']={title:'Assistant',view(){
     msgs.innerHTML=chat.msgs.map(m=>`<div class="msg ${m.me?'me':''}">${!m.me?'<span class="abdul-chat-avatar" style="display:inline-flex;align-items:center;margin-right:8px;vertical-align:middle"><img src="abdul/abdul-idle-head.webp" alt="Abdul" style="width:28px;height:28px;border-radius:4px;object-fit:contain;display:inline-block"></span>':''}${esc(m.t)}${m.src?`<span class="src">Source: ${m.src}</span>`:''}</div>`).join('');
     msgs.scrollTop=msgs.scrollHeight;
   };
-  const ask=()=>{if(chat.step<Q.length){quick.innerHTML=Q[chat.step].o.map(([v,l])=>`<button class="chip" data-v="${v}">${l}</button>`).join('')}else quick.innerHTML=''};
+  const ask=()=>{
+    if(chat.step<Q.length){
+      const chips = Q[chat.step].o.map(([v,l])=>`<button class="chip" data-v="${v}">${l}</button>`).join('');
+      const skipBtn = `<button class="chip" id="skip-qa-btn" style="background:transparent;border:1px dashed var(--border-strong);color:var(--text-muted);font-weight:normal">Skip onboarding & ask directly →</button>`;
+      quick.innerHTML = chips + skipBtn;
+      const sb = $('#skip-qa-btn');
+      if (sb) sb.onclick = (e) => { e.stopPropagation(); finishOnboarding(); };
+    } else {
+      quick.innerHTML='';
+    }
+  };
   const planCard=()=>{
     const a=chat.ans;const track=Data.tracks.find(t=>t.slug===TRACK_FOR[a.topic])||Data.tracks[0];const goal=GOALS[a.goal];
     const profs=Data.profs.filter(p=>p.domain_tags.includes(a.topic)).slice(0,3);const fy=Data.fyps.filter(p=>p.domain_tags.includes(a.topic)).slice(0,3);

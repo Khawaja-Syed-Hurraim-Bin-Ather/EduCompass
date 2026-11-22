@@ -418,24 +418,24 @@ export class FAQMatcher {
       renderedAnswer = renderedAnswer.replace(/\{target\}/g, slots.target.toFixed(2));
     }
 
-    // Access check: If intent is enrolled-only and user is public
-    if (intent.audience === 'enrolled' && userRole === 'public') {
-      return {
-        status: 'direct_match',
-        intent,
-        confidence: bestScore,
-        extractedSlots: slots,
-        publicBehaviour: 'login_prompt',
-        renderedAnswer: 'This planning feature requires an enrolled student profile. Please sign in with your NED university student credentials to access personalized evaluations.',
-        sourceLabel: intent.source_type,
-        relatedChips: intent.related,
-        nearMissProtected,
-      };
-    }
-
     // Calibrated Thresholds:
     // Score >= 0.70 -> Direct Match
     if (bestScore >= 0.70) {
+      // Access check: If intent is enrolled-only and user is public
+      if (intent.audience === 'enrolled' && userRole === 'public') {
+        return {
+          status: 'direct_match',
+          intent,
+          confidence: bestScore,
+          extractedSlots: slots,
+          publicBehaviour: 'login_prompt',
+          renderedAnswer: 'This planning feature requires an enrolled student profile. Please sign in with your NED university student credentials to access personalized evaluations.',
+          sourceLabel: intent.source_type,
+          relatedChips: intent.related,
+          nearMissProtected,
+        };
+      }
+
       return {
         status: 'direct_match',
         intent,

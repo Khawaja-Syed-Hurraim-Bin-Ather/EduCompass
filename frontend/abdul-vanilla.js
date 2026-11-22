@@ -150,9 +150,24 @@
     }
   ];
 
+  var ACADEMIC_GUARD = /\b([a-z]{2,3}-?\d{3})\b|cgpa|\bgpa\b|credit|prereq|semester|\bfyp\b|course|professor|supervisor|retake|repeat|backlog|elective|track|grade|passing grade|degree requirement/i;
+  var PERSONA_ADDRESS = /\b(you|your|u|abdul|bari|aap|aapka|aapki|tum|tumhara|tumhari|apna|apni)\b/i;
+  var STRESS_PATTERN = /\b(stress|stressed|panic|panicking|scared|dar lag|dar lagta|tension|ghabra|ghabrahat|failing everything|fail ho gaya|himmat|depressed|tired of this)\b/i;
+
   function answerPersona(query) {
     if (!query) return null;
     var q = query.trim();
+
+    // Stress Handler (F5)
+    if (STRESS_PATTERN.test(q)) {
+      return "Hosla rakho! Engineering mein ups and downs aate hain, par har mushkil ka hal nikalta hai. Deep breath lo — batao kis course ya prerequisite mein issue aa raha hai, hum mil kar plan banate hain.";
+    }
+
+    // Academic Guard (F2, F3, F4): If academic question and NOT asking Abdul personal questions, let academic backend answer
+    if (ACADEMIC_GUARD.test(q) && !PERSONA_ADDRESS.test(q)) {
+      return null;
+    }
+
     for (var i = 0; i < PERSONA_QA.length; i++) {
       var item = PERSONA_QA[i];
       for (var j = 0; j < item.patterns.length; j++) {
@@ -283,8 +298,12 @@
       } else {
         btn.classList.remove('abdul-launcher-admin');
       }
-      // Never hide: Abdul Bari is always present on screen
-      btn.style.display = 'flex';
+      // Hide floating launcher on assistant page to prevent input occlusion & duplicate avatar
+      if (hash.startsWith('#/assistant')) {
+        btn.style.display = 'none';
+      } else {
+        btn.style.display = 'flex';
+      }
     }
     window.addEventListener('hashchange', checkRoute);
     checkRoute();

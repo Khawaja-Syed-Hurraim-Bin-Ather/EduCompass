@@ -1,0 +1,2310 @@
+{
+  "_meta": {
+    "note": "DRAFT seed data for EduCompass / Abdul Bari. Everything is load_active=false until Hurraim approves (AGENTS.md Rule 2). 'patterns' = canonical lowercase substring keys for Layer 1 (after Roman Urdu normalisation). 'questions' = full phrasings used as test fixtures and for the scored matcher. Roman Urdu text is drafted by Claude: needs human review.",
+    "counts": {
+      "verified_intents": 16,
+      "unverified_intents": 3,
+      "fact_questions": 256,
+      "faculty_profiles": 18,
+      "faculty_questions": 150,
+      "redirect_intents": 22,
+      "redirect_questions": 220,
+      "emotion_intents": 7,
+      "emotion_questions": 88,
+      "total_questions": 714
+    },
+    "quality_check": {
+      "method": "Leave-one-out test with a naive IDF token-overlap scorer over all fact + redirect phrasings (en+ru).",
+      "result": "434/476 phrasings resolved to the right intent (91.2%).",
+      "known_confusable_pairs": [
+        "G08/G12/G13 (FYP timing vs FYP credits vs degree length)",
+        "G14/G15/G16 (faculty count vs FYP count vs FYP examples)",
+        "G03/G07 (retake vs failed prerequisite)",
+        "G04/G05 (credit limit vs total credits)",
+        "R06/R07 (registration dates vs add-drop dates)",
+        "R09/R17/R18/R21 short phrasings sharing 'course'/'teacher'"
+      ],
+      "instruction": "The agent must re-run an equivalent leave-one-out test with the real matcher and fix confusions by adding discriminating phrasings or, for near-duplicates, returning a short clarifying question instead of guessing."
+    },
+    "load_rules": [
+      "Load every row with is_active=false and a draft review status; never touch existing rows.",
+      "facts[].verified=false rows stay inactive until Hurraim confirms.",
+      "faculty_fixtures are Layer 2 resolver fixtures and answer templates, not Layer 1 rows.",
+      "dynamic_value=true answers should be built from live data; the text is only a fallback.",
+      "known_unanswered rows return the redirect and log to chatbot_unanswered."
+    ]
+  },
+  "facts": [
+    {
+      "intent_id": "G01",
+      "category": "grading",
+      "verified": true,
+      "load_active": false,
+      "dynamic_value": false,
+      "note": null,
+      "en": {
+        "patterns": [
+          "minimum cgpa",
+          "cgpa to graduate",
+          "cgpa needed",
+          "cgpa required",
+          "cgpa do i need",
+          "passing cgpa",
+          "graduation cgpa",
+          "lowest cgpa"
+        ],
+        "questions": [
+          "what is the minimum cgpa to graduate",
+          "how much cgpa do i need to graduate",
+          "minimum cgpa required for the degree",
+          "what cgpa is needed to pass out",
+          "cgpa required for graduation",
+          "can i graduate with 2.0 cgpa",
+          "what's the passing cgpa",
+          "lowest cgpa to get my degree"
+        ],
+        "answer": "To graduate you need a minimum CGPA of 2.00."
+      },
+      "ru": {
+        "patterns": [
+          "cgpa kitna",
+          "minimum cgpa",
+          "kam az kam cgpa",
+          "cgpa chahiye",
+          "cgpa kitna chahiye"
+        ],
+        "questions": [
+          "graduate hone ke liye kitna cgpa chahiye",
+          "degree ke liye minimum cgpa kitna hai",
+          "kam az kam cgpa kitna hona chahiye",
+          "pass out hone ke liye cgpa kitna chahiye",
+          "2.0 cgpa pe degree mil jati hai kya",
+          "graduation ke liye cgpa kitna zaroori hai",
+          "minimum cgpa batao",
+          "degree lene ke liye lowest cgpa kya hai"
+        ],
+        "answer": "Graduate hone ke liye kam az kam 2.00 CGPA chahiye."
+      }
+    },
+    {
+      "intent_id": "G02",
+      "category": "grading",
+      "verified": true,
+      "load_active": false,
+      "dynamic_value": false,
+      "note": null,
+      "en": {
+        "patterns": [
+          "passing grade",
+          "minimum passing grade",
+          "pass mark",
+          "minimum grade to pass",
+          "what grade is pass",
+          "d grade pass"
+        ],
+        "questions": [
+          "what is the passing grade",
+          "minimum grade to pass a course",
+          "how many marks to pass",
+          "is a d grade a pass",
+          "what are the pass marks",
+          "lowest passing grade",
+          "is d considered passing",
+          "what percentage is needed to pass"
+        ],
+        "answer": "The minimum passing grade is D (1.0 grade point, 50% marks)."
+      },
+      "ru": {
+        "patterns": [
+          "passing grade kya",
+          "pass hone ke liye kya chahiye",
+          "minimum grade kya",
+          "pass marks kitne",
+          "kitne marks pe pass",
+          "d grade pass"
+        ],
+        "questions": [
+          "passing grade kya hai",
+          "pass hone ke liye minimum grade kya hai",
+          "pass hone ke liye kitne marks chahiye",
+          "kya d grade pass hota hai",
+          "pass marks kitne hote hain",
+          "kitne percent pe pass hote hain",
+          "sabse kam pass grade kaun sa hai",
+          "d aaye to pass hon ge kya"
+        ],
+        "answer": "Minimum passing grade D hai (1.0 grade point, yaani 50% marks)."
+      }
+    },
+    {
+      "intent_id": "G03",
+      "category": "grading",
+      "verified": true,
+      "load_active": false,
+      "dynamic_value": false,
+      "note": null,
+      "en": {
+        "patterns": [
+          "retake course",
+          "repeat course",
+          "which grade counts",
+          "improve grade",
+          "grade improvement",
+          "repeat a failed course",
+          "retake a course",
+          "retake a subject"
+        ],
+        "questions": [
+          "can i retake a course",
+          "how does repeating a course affect cgpa",
+          "which grade counts if i retake",
+          "how to improve my grade",
+          "if i repeat a course does the old grade stay",
+          "can i repeat a failed course",
+          "does the higher grade count after a retake",
+          "retake rules"
+        ],
+        "answer": "If you repeat a course, the higher grade replaces the earlier grade in your CGPA calculation."
+      },
+      "ru": {
+        "patterns": [
+          "course dobara parhna",
+          "repeat karna",
+          "kaun sa grade count",
+          "grade improve",
+          "fail course dobara",
+          "retake kaise"
+        ],
+        "questions": [
+          "kya main course dobara le sakta hoon",
+          "course repeat karne se cgpa pe kya asar parta hai",
+          "retake karoon to kaun sa grade count hoga",
+          "grade improve kaise karun",
+          "repeat karne par purana grade rehta hai ya nahi",
+          "fail course dobara kaise parhun",
+          "retake ke baad higher grade count hota hai kya",
+          "retake ke rules batao"
+        ],
+        "answer": "Course repeat karo to CGPA mein higher grade purane grade ki jagah count hota hai."
+      }
+    },
+    {
+      "intent_id": "G04",
+      "category": "registration",
+      "verified": true,
+      "load_active": false,
+      "dynamic_value": false,
+      "note": null,
+      "en": {
+        "patterns": [
+          "max credits",
+          "credit limit",
+          "maximum credit hours",
+          "credit ceiling",
+          "how many credits can i take",
+          "overload",
+          "21 credits",
+          "credit overload"
+        ],
+        "questions": [
+          "how many credit hours can i take in a semester",
+          "what is the maximum credit load",
+          "can i take 21 credit hours",
+          "how do i get a credit overload",
+          "what is the credit limit per semester",
+          "can i take more than 18 credits",
+          "who approves a credit overload",
+          "max credits per semester"
+        ],
+        "answer": "The regular maximum is 18 credit hours per semester. An overload of up to 21 credit hours is possible with the Chairman's approval."
+      },
+      "ru": {
+        "patterns": [
+          "ek semester mein kitne credit",
+          "zyada se zyada credit",
+          "credit limit kitni",
+          "overload kaise",
+          "21 credit"
+        ],
+        "questions": [
+          "ek semester mein kitne credit hours le sakta hoon",
+          "zyada se zyada credit hours kitne hain",
+          "kya main 21 credit hours le sakta hoon",
+          "credit overload kaise milta hai",
+          "semester ki credit limit kitni hai",
+          "18 se zyada credits mil sakte hain kya",
+          "overload ki manzoori kaun deta hai",
+          "ek semester mein max credits batao"
+        ],
+        "answer": "Aam taur par ek semester mein zyada se zyada 18 credit hours le sakte ho. 21 credit hours tak overload Chairman ki manzoori se mumkin hai."
+      }
+    },
+    {
+      "intent_id": "G05",
+      "category": "program",
+      "verified": true,
+      "load_active": false,
+      "dynamic_value": false,
+      "note": null,
+      "en": {
+        "patterns": [
+          "total credit hours",
+          "degree credit hours",
+          "how many credits in degree",
+          "total credits",
+          "credits to graduate"
+        ],
+        "questions": [
+          "how many credit hours is the degree",
+          "total credit hours to graduate",
+          "how many credits do i need for the degree",
+          "what are the total credits",
+          "degree credit hours",
+          "how many credits in total"
+        ],
+        "answer": "The degree is 136 credit hours across 8 semesters."
+      },
+      "ru": {
+        "patterns": [
+          "degree mein kul kitne credit",
+          "total credit hours kitne",
+          "graduate hone ke liye kitne credit"
+        ],
+        "questions": [
+          "degree mein kul kitne credit hours hain",
+          "graduate hone ke liye total kitne credits chahiye",
+          "kul credit hours kitne hain",
+          "degree kitne credit hours ki hai",
+          "total credits kitne hote hain",
+          "poori degree mein kitne credits hain"
+        ],
+        "answer": "Degree 136 credit hours ki hai, jo 8 semesters mein hoti hai."
+      }
+    },
+    {
+      "intent_id": "G06",
+      "category": "program",
+      "verified": true,
+      "load_active": false,
+      "dynamic_value": false,
+      "note": null,
+      "en": {
+        "patterns": [
+          "how many courses",
+          "total courses",
+          "number of courses",
+          "how many subjects",
+          "how many labs"
+        ],
+        "questions": [
+          "how many courses are in the degree",
+          "total number of courses",
+          "how many subjects are there",
+          "how many subjects do we study in total",
+          "are labs included in the course count",
+          "how many courses including labs"
+        ],
+        "answer": "The program has 53 courses in total, including theory courses and practical labs."
+      },
+      "ru": {
+        "patterns": [
+          "kitne courses",
+          "kul kitne subjects",
+          "total courses kitne",
+          "kitne labs"
+        ],
+        "questions": [
+          "degree mein kitne courses hain",
+          "kul kitne subjects hain",
+          "total courses kitne hain",
+          "poori degree mein kitne subjects parhne hote hain",
+          "kya labs bhi courses mein shamil hain",
+          "labs mila kar kitne courses hain"
+        ],
+        "answer": "Program mein kul 53 courses hain, jin mein theory aur practical labs shamil hain."
+      }
+    },
+    {
+      "intent_id": "G07",
+      "category": "prerequisites",
+      "verified": true,
+      "load_active": false,
+      "dynamic_value": false,
+      "note": null,
+      "en": {
+        "patterns": [
+          "failed prereq",
+          "fail prerequisite",
+          "failed prerequisite",
+          "locked course",
+          "cannot register course",
+          "why is my course locked",
+          "prerequisite failed"
+        ],
+        "questions": [
+          "what happens if i fail a prerequisite",
+          "why is my course locked",
+          "i failed a prerequisite, can i take the next course",
+          "can i register a course if i failed its prerequisite",
+          "why can't i register for the next course",
+          "what if i fail a prereq",
+          "are dependent courses locked if i fail",
+          "prerequisite failed what now"
+        ],
+        "answer": "If you fail a prerequisite, the courses that depend on it stay locked until you pass the prerequisite."
+      },
+      "ru": {
+        "patterns": [
+          "prerequisite fail",
+          "prereq fail",
+          "course lock kyun",
+          "agla course kyun nahi",
+          "prerequisite fail to kya"
+        ],
+        "questions": [
+          "prerequisite fail ho jaye to kya hota hai",
+          "mera course lock kyun hai",
+          "prerequisite fail hai kya main agla course le sakta hoon",
+          "prerequisite fail ho to course register ho sakta hai kya",
+          "mujhe agla course kyun nahi mil raha",
+          "prereq fail ho gaya ab kya karun",
+          "dependent courses lock ho jate hain kya",
+          "prerequisite fail ho gaya to kya hoga"
+        ],
+        "answer": "Agar prerequisite fail ho jaye to jo courses us par depend karte hain woh us waqt tak lock rehte hain jab tak tum prerequisite pass nahi kar lete."
+      }
+    },
+    {
+      "intent_id": "G08",
+      "category": "fyp",
+      "verified": true,
+      "load_active": false,
+      "dynamic_value": false,
+      "note": null,
+      "en": {
+        "patterns": [
+          "when fyp starts",
+          "fyp start",
+          "7th semester fyp",
+          "fyp semester",
+          "fyp timing",
+          "when do i start fyp",
+          "fyp duration"
+        ],
+        "questions": [
+          "when does the fyp start",
+          "in which semester is fyp",
+          "how long is the fyp",
+          "when do i begin my final year project",
+          "is fyp in 7th semester",
+          "how many semesters is the fyp",
+          "fyp part 1 and part 2 semesters",
+          "when does the final year project begin"
+        ],
+        "answer": "The Final Year Project is CS-406: Part I runs in Semester 7 and Part II in Semester 8, 3 credit hours each."
+      },
+      "ru": {
+        "patterns": [
+          "fyp kab",
+          "fyp kis semester",
+          "fyp kab start",
+          "fyp kitne semester"
+        ],
+        "questions": [
+          "fyp kab shuru hota hai",
+          "fyp kis semester mein hota hai",
+          "fyp kitne semester ka hota hai",
+          "final year project kab start hota hai",
+          "kya fyp 7th semester mein hota hai",
+          "fyp part 1 aur part 2 kab hote hain",
+          "fyp ka time kya hai",
+          "fyp kab se kab tak chalta hai"
+        ],
+        "answer": "Final Year Project CS-406 hai: Part I Semester 7 mein aur Part II Semester 8 mein hota hai, har part 3 credit hours ka."
+      }
+    },
+    {
+      "intent_id": "G09",
+      "category": "fyp",
+      "verified": true,
+      "load_active": false,
+      "dynamic_value": false,
+      "note": null,
+      "en": {
+        "patterns": [
+          "how to get supervisor",
+          "find supervisor",
+          "contact professor",
+          "who can supervise my fyp",
+          "fyp supervisor",
+          "get a supervisor"
+        ],
+        "questions": [
+          "how do i find a supervisor for my fyp",
+          "how to get a supervisor",
+          "how can i contact a professor for fyp",
+          "who can supervise my project",
+          "how do i choose a fyp supervisor",
+          "what should i email a professor for fyp",
+          "how to approach a supervisor",
+          "where do i find professors for my fyp"
+        ],
+        "answer": "Browse faculty profiles in the Professor Directory to match research domains (for example Computer Vision, Cybersecurity, Embedded AI). Draft a concise email with your CV and a 2-line project idea."
+      },
+      "ru": {
+        "patterns": [
+          "supervisor kaise",
+          "supervisor kaise dhoond",
+          "fyp ke liye professor",
+          "kis professor se fyp"
+        ],
+        "questions": [
+          "fyp ke liye supervisor kaise milega",
+          "supervisor kaise dhoondun",
+          "fyp ke liye professor se kaise rabta karun",
+          "mera project kaun supervise kar sakta hai",
+          "fyp supervisor kaise chunun",
+          "professor ko fyp ke liye email mein kya likhun",
+          "supervisor se kaise baat karun",
+          "fyp ke liye professors kahan se dekhun"
+        ],
+        "answer": "Professor Directory mein faculty ki research areas dekho aur apne project idea se match karo. Phir apna CV aur 2 line ka project idea email kar do."
+      }
+    },
+    {
+      "intent_id": "G10",
+      "category": "career",
+      "verified": true,
+      "load_active": false,
+      "dynamic_value": true,
+      "note": "Build from career_tracks data at runtime; this text is the fallback.",
+      "en": {
+        "patterns": [
+          "career tracks",
+          "what tracks are there",
+          "career paths",
+          "which track should i choose",
+          "list of tracks"
+        ],
+        "questions": [
+          "what career tracks are available",
+          "list the career tracks",
+          "what career paths does the department offer",
+          "how many career tracks are there",
+          "which tracks can i choose",
+          "tell me about career tracks"
+        ],
+        "answer": "There are 12 career tracks: AI & Machine Learning, Data Science & Big Data, Full-Stack Web Development, Cybersecurity & Digital Forensics, Embedded Systems & IoT, Cloud Architecture & DevOps, Mobile App Engineering, Blockchain & Smart Contracts, Computer Vision & Graphics, Bioinformatics & Health Tech, AR/VR & Game Engineering, and Software Quality Assurance & Testing."
+      },
+      "ru": {
+        "patterns": [
+          "career tracks kon se",
+          "tracks ki list",
+          "career paths",
+          "kaun sa track chunun"
+        ],
+        "questions": [
+          "career tracks kon se hain",
+          "tracks ki list batao",
+          "department kaun se career paths deta hai",
+          "kitne career tracks hain",
+          "main kaun se tracks chun sakta hoon",
+          "career tracks ke baare mein batao"
+        ],
+        "answer": "Career tracks 12 hain: AI & Machine Learning, Data Science & Big Data, Full-Stack Web Development, Cybersecurity & Digital Forensics, Embedded Systems & IoT, Cloud Architecture & DevOps, Mobile App Engineering, Blockchain & Smart Contracts, Computer Vision & Graphics, Bioinformatics & Health Tech, AR/VR & Game Engineering, aur Software Quality Assurance & Testing."
+      }
+    },
+    {
+      "intent_id": "G11",
+      "category": "tools",
+      "verified": true,
+      "load_active": false,
+      "dynamic_value": false,
+      "note": null,
+      "en": {
+        "patterns": [
+          "what if simulation",
+          "failure simulator",
+          "what if simulator",
+          "simulate failing a course"
+        ],
+        "questions": [
+          "what is the what-if simulator",
+          "how does the failure simulator work",
+          "can i simulate failing a course",
+          "does the simulator change my record",
+          "what does the prerequisite explorer simulator do",
+          "is the simulator official"
+        ],
+        "answer": "The What-If Failure Simulator in the Prerequisite Explorer runs entirely in your browser. It never alters your official academic record."
+      },
+      "ru": {
+        "patterns": [
+          "what if simulator kya",
+          "failure simulator",
+          "fail simulate kaise"
+        ],
+        "questions": [
+          "what if simulator kya hai",
+          "failure simulator kaise kaam karta hai",
+          "kya main fail hone ka simulation kar sakta hoon",
+          "kya simulator mera record badal deta hai",
+          "prerequisite explorer ka simulator kya karta hai",
+          "kya simulator official hai"
+        ],
+        "answer": "What-If Failure Simulator Prerequisite Explorer mein tumhare browser ke andar hi chalta hai. Yeh tumhara official academic record kabhi nahi badalta."
+      }
+    },
+    {
+      "intent_id": "G12",
+      "category": "fyp",
+      "verified": true,
+      "load_active": false,
+      "dynamic_value": false,
+      "note": null,
+      "en": {
+        "patterns": [
+          "fyp credits",
+          "how many credits is fyp",
+          "credit hours of fyp",
+          "cs-406 credits",
+          "is fyp 3 credit hours"
+        ],
+        "questions": [
+          "how many credit hours is the fyp",
+          "fyp credits",
+          "how many credits is the final year project",
+          "is fyp 3 credit hours",
+          "how many credit hours is cs-406",
+          "does fyp have separate credits for each part"
+        ],
+        "answer": "CS-406 (Final Year Project) is 3 credit hours per part: Part I in Semester 7 and Part II in Semester 8."
+      },
+      "ru": {
+        "patterns": [
+          "fyp ke credit",
+          "fyp kitne credit",
+          "cs-406 credit"
+        ],
+        "questions": [
+          "fyp kitne credit hours ka hai",
+          "fyp ke credits kitne hain",
+          "final year project ke kitne credits hain",
+          "kya fyp 3 credit hours ka hota hai",
+          "cs-406 ke kitne credit hain",
+          "fyp ke har part ke alag credits hain kya"
+        ],
+        "answer": "CS-406 (Final Year Project) har part ke liye 3 credit hours ka hai: Part I Semester 7 mein aur Part II Semester 8 mein."
+      }
+    },
+    {
+      "intent_id": "G13",
+      "category": "program",
+      "verified": true,
+      "load_active": false,
+      "dynamic_value": false,
+      "note": null,
+      "en": {
+        "patterns": [
+          "how many semesters",
+          "degree duration",
+          "how long is the degree",
+          "8 semesters"
+        ],
+        "questions": [
+          "how many semesters are in the degree",
+          "how long is the degree",
+          "is the degree 8 semesters",
+          "degree duration",
+          "how many semesters until i graduate",
+          "total semesters"
+        ],
+        "answer": "The degree runs over 8 semesters (136 credit hours in total)."
+      },
+      "ru": {
+        "patterns": [
+          "kitne semesters",
+          "degree kitne semester",
+          "degree kitni lambi"
+        ],
+        "questions": [
+          "degree mein kitne semesters hote hain",
+          "degree kitne semesters ki hai",
+          "kya degree 8 semesters ki hoti hai",
+          "degree ka total time kitna hai",
+          "graduate hone tak kitne semesters",
+          "kul kitne semesters hain"
+        ],
+        "answer": "Degree 8 semesters ki hoti hai (kul 136 credit hours)."
+      }
+    },
+    {
+      "intent_id": "G14",
+      "category": "faculty",
+      "verified": true,
+      "load_active": false,
+      "dynamic_value": true,
+      "note": "Replace the number with a live COUNT from professors (approved/published).",
+      "en": {
+        "patterns": [
+          "how many professors",
+          "how many faculty",
+          "number of faculty",
+          "faculty count"
+        ],
+        "questions": [
+          "how many professors are there",
+          "how many faculty members does the department have",
+          "number of faculty profiles",
+          "how many teachers are listed",
+          "faculty count",
+          "how many professors can i browse"
+        ],
+        "answer": "The department records list 18 published faculty profiles."
+      },
+      "ru": {
+        "patterns": [
+          "kitne professors",
+          "kitne teachers",
+          "faculty kitni"
+        ],
+        "questions": [
+          "kitne professors hain",
+          "department mein kitni faculty hai",
+          "kitne faculty profiles hain",
+          "kitne teachers listed hain",
+          "faculty ki tadaad kitni hai",
+          "main kitne professors dekh sakta hoon"
+        ],
+        "answer": "Department ke records mein 18 published faculty profiles hain."
+      }
+    },
+    {
+      "intent_id": "G15",
+      "category": "fyp",
+      "verified": true,
+      "load_active": false,
+      "dynamic_value": true,
+      "note": "Replace the number and years with live values from fyp_projects (approved/published).",
+      "en": {
+        "patterns": [
+          "how many fyps",
+          "fyp projects count",
+          "how many projects",
+          "past fyps",
+          "fyp database"
+        ],
+        "questions": [
+          "how many fyp projects are in the database",
+          "how many past fyps can i see",
+          "number of fyps",
+          "how many projects are listed",
+          "what years do the fyp projects cover",
+          "are there past fyp examples"
+        ],
+        "answer": "The database has 68 reviewed FYP projects from 2022 to 2025."
+      },
+      "ru": {
+        "patterns": [
+          "kitne fyp",
+          "purane fyp",
+          "fyp projects kitne"
+        ],
+        "questions": [
+          "database mein kitne fyp projects hain",
+          "purane kitne fyps dekh sakta hoon",
+          "fyps ki tadaad kitni hai",
+          "kitne projects listed hain",
+          "fyp projects kin saalon ke hain",
+          "kya purane fyp ki misalen hain"
+        ],
+        "answer": "Database mein 2022 se 2025 tak ke 68 reviewed FYP projects hain."
+      }
+    },
+    {
+      "intent_id": "G16",
+      "category": "fyp",
+      "verified": true,
+      "load_active": false,
+      "dynamic_value": true,
+      "note": "Prefer a live query of fyp_projects; these six titles are from Hurraim's notes.",
+      "en": {
+        "patterns": [
+          "fyp examples",
+          "example fyp",
+          "fyp ideas",
+          "past fyp titles",
+          "sample fyp"
+        ],
+        "questions": [
+          "give me some fyp examples",
+          "what are some past fyp titles",
+          "fyp ideas please",
+          "show me sample fyp projects",
+          "what kind of projects did past students do",
+          "examples of final year projects"
+        ],
+        "answer": "Some past FYP titles in the department records: IoT Based Air Pollution Monitoring, Telepresence Robot, AI Enabled Urdu OCR, DeepFake Detection using CNN, Blockchain-Based Degree Verification, and Faster R-CNN Traffic Management."
+      },
+      "ru": {
+        "patterns": [
+          "fyp ki misal",
+          "fyp ideas",
+          "purane fyp titles"
+        ],
+        "questions": [
+          "fyp ki kuch misalen do",
+          "purane fyp ke titles kya hain",
+          "fyp ke ideas batao",
+          "sample fyp projects dikhao",
+          "pichle students ne kaun se projects kiye",
+          "final year projects ki misalen"
+        ],
+        "answer": "Department ke records mein purane FYP titles mein se kuch: IoT Based Air Pollution Monitoring, Telepresence Robot, AI Enabled Urdu OCR, DeepFake Detection using CNN, Blockchain-Based Degree Verification, aur Faster R-CNN Traffic Management."
+      }
+    },
+    {
+      "intent_id": "U01",
+      "category": "grading",
+      "verified": false,
+      "load_active": false,
+      "dynamic_value": false,
+      "note": "NEEDS VERIFICATION: only D=1.0=minimum pass is confirmed. Full scale is from the old spec.",
+      "en": {
+        "patterns": [
+          "grading scale",
+          "grade points",
+          "what is an a grade",
+          "grade scale"
+        ],
+        "questions": [
+          "what is the grading scale",
+          "how many grade points is an a",
+          "grade point values",
+          "what is a b+ worth",
+          "what grade is 3.7",
+          "explain the grade scale"
+        ],
+        "answer": "NED University follows a 4.0 scale: A (4.0), A- (3.7), B+ (3.4), B (3.0), B- (2.7), C+ (2.4), C (2.0), C- (1.7), D+ (1.4), D (1.0), and F (0.0). D is the minimum passing grade."
+      },
+      "ru": {
+        "patterns": [
+          "grading scale kya",
+          "grade points kitne",
+          "a grade ke kitne points"
+        ],
+        "questions": [
+          "grading scale kya hai",
+          "a grade ke kitne grade points hain",
+          "grade points ki list batao",
+          "b+ ke kitne points hote hain",
+          "3.7 kaun sa grade hai",
+          "grade scale samjha do"
+        ],
+        "answer": "NED mein 4.0 scale chalta hai: A (4.0), A- (3.7), B+ (3.4), B (3.0), B- (2.7), C+ (2.4), C (2.0), C- (1.7), D+ (1.4), D (1.0), aur F (0.0). D minimum passing grade hai."
+      }
+    },
+    {
+      "intent_id": "U02",
+      "category": "grading",
+      "verified": false,
+      "load_active": false,
+      "dynamic_value": false,
+      "note": "NEEDS VERIFICATION: criteria come from the old spec only.",
+      "en": {
+        "patterns": [
+          "deans list",
+          "dean honor",
+          "honor list",
+          "merit standing",
+          "dean's honor"
+        ],
+        "questions": [
+          "what is the dean's honor list",
+          "how do i get on the dean's list",
+          "dean's list criteria",
+          "what gpa for the honor list",
+          "honor roll requirements",
+          "merit standing criteria"
+        ],
+        "answer": "To qualify for the Dean's Honor Roll, a student must achieve a Semester GPA of 3.50 or higher in a regular semester with zero backlogs and a normal credit load."
+      },
+      "ru": {
+        "patterns": [
+          "deans list",
+          "honor list",
+          "merit list"
+        ],
+        "questions": [
+          "dean's honor list kya hai",
+          "dean's list mein kaise aaun",
+          "dean's list ki shartein",
+          "honor list ke liye kitna gpa chahiye",
+          "honor roll ke requirements kya hain",
+          "merit standing kya hoti hai"
+        ],
+        "answer": "Dean's Honor Roll ke liye regular semester mein Semester GPA 3.50 ya zyada, koi backlog nahi, aur normal credit load hona chahiye."
+      }
+    },
+    {
+      "intent_id": "U03",
+      "category": "prerequisites",
+      "verified": false,
+      "load_active": false,
+      "dynamic_value": true,
+      "note": "NEEDS VERIFICATION against ned_cse_course_chart.json. Prefer building the path from the courses table at runtime.",
+      "en": {
+        "patterns": [
+          "hardware sequence",
+          "hardware path",
+          "embedded path",
+          "course path embedded"
+        ],
+        "questions": [
+          "what is the hardware course sequence",
+          "what is the path to embedded systems",
+          "which courses lead to cs-420",
+          "hardware prerequisite path",
+          "course sequence for embedded systems",
+          "what comes before microprocessors"
+        ],
+        "answer": "The hardware sequence is EE-120 (Basic Electrical) → CS-221 (Logic Design) → CS-219 (Computer Architecture) → CS-320 (Microprocessors) → CS-420 (Embedded Systems)."
+      },
+      "ru": {
+        "patterns": [
+          "hardware sequence",
+          "hardware path",
+          "embedded ka path"
+        ],
+        "questions": [
+          "hardware courses ka sequence kya hai",
+          "embedded systems tak ka path kya hai",
+          "cs-420 tak kaun se courses aate hain",
+          "hardware prerequisite path batao",
+          "embedded systems ka course sequence",
+          "microprocessors se pehle kya parhna hota hai"
+        ],
+        "answer": "Hardware sequence yeh hai: EE-120 (Basic Electrical) → CS-221 (Logic Design) → CS-219 (Computer Architecture) → CS-320 (Microprocessors) → CS-420 (Embedded Systems)."
+      }
+    }
+  ],
+  "faculty_fixtures": [
+    {
+      "faculty_id": "muhammad-ali",
+      "layer_target": "layer2_resolver_fixture",
+      "load_active": false,
+      "note": "Verify every field against the professors table. The DB is the source of truth. Do not insert as Layer 1 rows: short names like 'muhammad ali' are substrings of other names.",
+      "display_name": "Dr. Muhammad Ali",
+      "designation": "Professor",
+      "research_areas": "Artificial Intelligence, Natural Language Processing (NLP), Computer Vision",
+      "name_variants": [
+        "dr muhammad ali",
+        "muhammad ali"
+      ],
+      "en": {
+        "questions": [
+          "who is dr muhammad ali",
+          "tell me about muhammad ali"
+        ],
+        "answer": "Dr. Muhammad Ali is Professor in the Department of Computer & Information Systems Engineering. Research areas: Artificial Intelligence, Natural Language Processing (NLP), Computer Vision."
+      },
+      "ru": {
+        "questions": [
+          "dr muhammad ali kaun hain",
+          "muhammad ali ke baare mein batao"
+        ],
+        "answer": "Dr. Muhammad Ali CISE department mein Professor hain. Research areas: Artificial Intelligence, Natural Language Processing (NLP), Computer Vision."
+      }
+    },
+    {
+      "faculty_id": "fatima-zahra",
+      "layer_target": "layer2_resolver_fixture",
+      "load_active": false,
+      "note": "Verify every field against the professors table. The DB is the source of truth. Do not insert as Layer 1 rows: short names like 'muhammad ali' are substrings of other names.",
+      "display_name": "Dr. Fatima Zahra",
+      "designation": "Associate Professor",
+      "research_areas": "Software Architecture, Cloud Computing, DevOps, CI/CD",
+      "name_variants": [
+        "dr fatima zahra",
+        "fatima zahra",
+        "fatima zehra"
+      ],
+      "en": {
+        "questions": [
+          "who is dr fatima zahra",
+          "tell me about fatima zahra",
+          "what does fatima zehra research"
+        ],
+        "answer": "Dr. Fatima Zahra is Associate Professor in the Department of Computer & Information Systems Engineering. Research areas: Software Architecture, Cloud Computing, DevOps, CI/CD."
+      },
+      "ru": {
+        "questions": [
+          "dr fatima zahra kaun hain",
+          "fatima zahra ke baare mein batao",
+          "fatima zehra ka research area kya hai"
+        ],
+        "answer": "Dr. Fatima Zahra CISE department mein Associate Professor hain. Research areas: Software Architecture, Cloud Computing, DevOps, CI/CD."
+      }
+    },
+    {
+      "faculty_id": "syed-zaffar-qasim",
+      "layer_target": "layer2_resolver_fixture",
+      "load_active": false,
+      "note": "Verify every field against the professors table. The DB is the source of truth. Do not insert as Layer 1 rows: short names like 'muhammad ali' are substrings of other names.",
+      "display_name": "Dr. Syed Zaffar Qasim",
+      "designation": "Associate Professor",
+      "research_areas": "Evolutionary computation, Multiobjective optimization (FMPSO), Machine learning, Blockchain, Computer security",
+      "name_variants": [
+        "dr syed zaffar qasim",
+        "syed zaffar qasim",
+        "zaffar qasim",
+        "zafar qasim",
+        "syed zaffar",
+        "zaffar kasim"
+      ],
+      "en": {
+        "questions": [
+          "who is dr syed zaffar qasim",
+          "tell me about syed zaffar qasim",
+          "what does zaffar qasim research",
+          "zafar qasim research areas",
+          "what is syed zaffar designation",
+          "zaffar kasim profile"
+        ],
+        "answer": "Dr. Syed Zaffar Qasim is Associate Professor in the Department of Computer & Information Systems Engineering. Research areas: Evolutionary computation, Multiobjective optimization (FMPSO), Machine learning, Blockchain, Computer security."
+      },
+      "ru": {
+        "questions": [
+          "dr syed zaffar qasim kaun hain",
+          "syed zaffar qasim ke baare mein batao",
+          "zaffar qasim ka research area kya hai",
+          "zafar qasim kis cheez par research karte hain",
+          "syed zaffar ka profile dikhao",
+          "zaffar kasim ki designation kya hai"
+        ],
+        "answer": "Dr. Syed Zaffar Qasim CISE department mein Associate Professor hain. Research areas: Evolutionary computation, Multiobjective optimization (FMPSO), Machine learning, Blockchain, Computer security."
+      }
+    },
+    {
+      "faculty_id": "tahreem",
+      "layer_target": "layer2_resolver_fixture",
+      "load_active": false,
+      "note": "Verify every field against the professors table. The DB is the source of truth. Do not insert as Layer 1 rows: short names like 'muhammad ali' are substrings of other names.",
+      "display_name": "Ms. Tahreem",
+      "designation": "Lecturer",
+      "research_areas": "Remote sensing, Land-cover change detection (NDVI), AI assistive devices, Network security",
+      "name_variants": [
+        "ms tahreem",
+        "tahreem",
+        "tahrim",
+        "tehreem"
+      ],
+      "en": {
+        "questions": [
+          "who is ms tahreem",
+          "tell me about tahreem",
+          "what does tahrim research",
+          "tehreem research areas",
+          "who is dr tahreem"
+        ],
+        "answer": "Ms. Tahreem is Lecturer in the Department of Computer & Information Systems Engineering. Research areas: Remote sensing, Land-cover change detection (NDVI), AI assistive devices, Network security."
+      },
+      "ru": {
+        "questions": [
+          "ms tahreem kaun hain",
+          "tahreem ke baare mein batao",
+          "tahrim ka research area kya hai",
+          "tehreem kis cheez par research karte hain",
+          "dr tahreem kaun hain"
+        ],
+        "answer": "Ms. Tahreem CISE department mein Lecturer hain. Research areas: Remote sensing, Land-cover change detection (NDVI), AI assistive devices, Network security."
+      }
+    },
+    {
+      "faculty_id": "fakhra-aftab",
+      "layer_target": "layer2_resolver_fixture",
+      "load_active": false,
+      "note": "Verify every field against the professors table. The DB is the source of truth. Do not insert as Layer 1 rows: short names like 'muhammad ali' are substrings of other names.",
+      "display_name": "Dr. Fakhra Aftab",
+      "designation": "Assistant Professor",
+      "research_areas": "Computer vision, Deep learning, Embedded systems design, Web semantics, Performance optimization",
+      "name_variants": [
+        "dr fakhra aftab",
+        "fakhra aftab",
+        "fakra aftab",
+        "fakhra",
+        "fakra",
+        "fakhra aftaab"
+      ],
+      "en": {
+        "questions": [
+          "who is dr fakhra aftab",
+          "tell me about fakhra aftab",
+          "what does fakra aftab research",
+          "fakhra research areas",
+          "what is fakra designation",
+          "fakhra aftaab profile"
+        ],
+        "answer": "Dr. Fakhra Aftab is Assistant Professor in the Department of Computer & Information Systems Engineering. Research areas: Computer vision, Deep learning, Embedded systems design, Web semantics, Performance optimization."
+      },
+      "ru": {
+        "questions": [
+          "dr fakhra aftab kaun hain",
+          "fakhra aftab ke baare mein batao",
+          "fakra aftab ka research area kya hai",
+          "fakhra kis cheez par research karte hain",
+          "fakra ka profile dikhao",
+          "fakhra aftaab ki designation kya hai"
+        ],
+        "answer": "Dr. Fakhra Aftab CISE department mein Assistant Professor hain. Research areas: Computer vision, Deep learning, Embedded systems design, Web semantics, Performance optimization."
+      }
+    },
+    {
+      "faculty_id": "tariq-mehmood",
+      "layer_target": "layer2_resolver_fixture",
+      "load_active": false,
+      "note": "Verify every field against the professors table. The DB is the source of truth. Do not insert as Layer 1 rows: short names like 'muhammad ali' are substrings of other names.",
+      "display_name": "Dr. Tariq Mehmood",
+      "designation": "Associate Professor",
+      "research_areas": "Embedded Systems, Internet of Things (IoT), Robotics",
+      "name_variants": [
+        "dr tariq mehmood",
+        "tariq mehmood",
+        "tarik mehmood",
+        "tariq mahmood"
+      ],
+      "en": {
+        "questions": [
+          "who is dr tariq mehmood",
+          "tell me about tariq mehmood",
+          "what does tarik mehmood research",
+          "tariq mahmood research areas"
+        ],
+        "answer": "Dr. Tariq Mehmood is Associate Professor in the Department of Computer & Information Systems Engineering. Research areas: Embedded Systems, Internet of Things (IoT), Robotics."
+      },
+      "ru": {
+        "questions": [
+          "dr tariq mehmood kaun hain",
+          "tariq mehmood ke baare mein batao",
+          "tarik mehmood ka research area kya hai",
+          "tariq mahmood kis cheez par research karte hain"
+        ],
+        "answer": "Dr. Tariq Mehmood CISE department mein Associate Professor hain. Research areas: Embedded Systems, Internet of Things (IoT), Robotics."
+      }
+    },
+    {
+      "faculty_id": "maria-waqas",
+      "layer_target": "layer2_resolver_fixture",
+      "load_active": false,
+      "note": "Verify every field against the professors table. The DB is the source of truth. Do not insert as Layer 1 rows: short names like 'muhammad ali' are substrings of other names.",
+      "display_name": "Dr. Maria Waqas",
+      "designation": "Associate Professor",
+      "research_areas": "Computational biology, Neuromorphic hardware, Deep learning, Object detection (SiamMask), High performance computing",
+      "name_variants": [
+        "dr maria waqas",
+        "maria waqas",
+        "mariya waqas"
+      ],
+      "en": {
+        "questions": [
+          "who is dr maria waqas",
+          "tell me about maria waqas",
+          "what does mariya waqas research"
+        ],
+        "answer": "Dr. Maria Waqas is Associate Professor in the Department of Computer & Information Systems Engineering. Research areas: Computational biology, Neuromorphic hardware, Deep learning, Object detection (SiamMask), High performance computing."
+      },
+      "ru": {
+        "questions": [
+          "dr maria waqas kaun hain",
+          "maria waqas ke baare mein batao",
+          "mariya waqas ka research area kya hai"
+        ],
+        "answer": "Dr. Maria Waqas CISE department mein Associate Professor hain. Research areas: Computational biology, Neuromorphic hardware, Deep learning, Object detection (SiamMask), High performance computing."
+      }
+    },
+    {
+      "faculty_id": "kashif-asrar",
+      "layer_target": "layer2_resolver_fixture",
+      "load_active": false,
+      "note": "Verify every field against the professors table. The DB is the source of truth. Do not insert as Layer 1 rows: short names like 'muhammad ali' are substrings of other names.",
+      "display_name": "Dr. Kashif Asrar",
+      "designation": "Assistant Professor",
+      "research_areas": "Machine learning, Data science, Data analytics, IoT cryptography",
+      "name_variants": [
+        "dr kashif asrar",
+        "kashif asrar"
+      ],
+      "en": {
+        "questions": [
+          "who is dr kashif asrar",
+          "tell me about kashif asrar"
+        ],
+        "answer": "Dr. Kashif Asrar is Assistant Professor in the Department of Computer & Information Systems Engineering. Research areas: Machine learning, Data science, Data analytics, IoT cryptography."
+      },
+      "ru": {
+        "questions": [
+          "dr kashif asrar kaun hain",
+          "kashif asrar ke baare mein batao"
+        ],
+        "answer": "Dr. Kashif Asrar CISE department mein Assistant Professor hain. Research areas: Machine learning, Data science, Data analytics, IoT cryptography."
+      }
+    },
+    {
+      "faculty_id": "ibshar-ishrat",
+      "layer_target": "layer2_resolver_fixture",
+      "load_active": false,
+      "note": "Verify every field against the professors table. The DB is the source of truth. Do not insert as Layer 1 rows: short names like 'muhammad ali' are substrings of other names.",
+      "display_name": "Ms. Ibshar Ishrat",
+      "designation": "Lecturer",
+      "research_areas": "Queueing theory, Simulation modelling, Blockchain, Deepfake detection, Fintech systems",
+      "name_variants": [
+        "ms ibshar ishrat",
+        "ibshar ishrat",
+        "ibsar ishrat",
+        "ibshar"
+      ],
+      "en": {
+        "questions": [
+          "who is ms ibshar ishrat",
+          "tell me about ibshar ishrat",
+          "what does ibsar ishrat research",
+          "ibshar research areas",
+          "who is dr ibshar ishrat"
+        ],
+        "answer": "Ms. Ibshar Ishrat is Lecturer in the Department of Computer & Information Systems Engineering. Research areas: Queueing theory, Simulation modelling, Blockchain, Deepfake detection, Fintech systems."
+      },
+      "ru": {
+        "questions": [
+          "ms ibshar ishrat kaun hain",
+          "ibshar ishrat ke baare mein batao",
+          "ibsar ishrat ka research area kya hai",
+          "ibshar kis cheez par research karte hain",
+          "dr ibshar ishrat kaun hain"
+        ],
+        "answer": "Ms. Ibshar Ishrat CISE department mein Lecturer hain. Research areas: Queueing theory, Simulation modelling, Blockchain, Deepfake detection, Fintech systems."
+      }
+    },
+    {
+      "faculty_id": "muhammad-asad-arfeen",
+      "layer_target": "layer2_resolver_fixture",
+      "load_active": false,
+      "note": "Verify every field against the professors table. The DB is the source of truth. Do not insert as Layer 1 rows: short names like 'muhammad ali' are substrings of other names.",
+      "display_name": "Dr. Muhammad Asad Arfeen",
+      "designation": "Professor / Director ISL",
+      "research_areas": "Cybersecurity, Malware/ransomware detection, Digital forensics, Internet traffic modelling, Quantum key distribution",
+      "name_variants": [
+        "dr muhammad asad arfeen",
+        "muhammad asad arfeen",
+        "asad arfeen",
+        "asad arfin"
+      ],
+      "en": {
+        "questions": [
+          "who is dr muhammad asad arfeen",
+          "tell me about muhammad asad arfeen",
+          "what does asad arfeen research",
+          "asad arfin research areas"
+        ],
+        "answer": "Dr. Muhammad Asad Arfeen is Professor / Director ISL in the Department of Computer & Information Systems Engineering. Research areas: Cybersecurity, Malware/ransomware detection, Digital forensics, Internet traffic modelling, Quantum key distribution."
+      },
+      "ru": {
+        "questions": [
+          "dr muhammad asad arfeen kaun hain",
+          "muhammad asad arfeen ke baare mein batao",
+          "asad arfeen ka research area kya hai",
+          "asad arfin kis cheez par research karte hain"
+        ],
+        "answer": "Dr. Muhammad Asad Arfeen CISE department mein Professor / Director ISL hain. Research areas: Cybersecurity, Malware/ransomware detection, Digital forensics, Internet traffic modelling, Quantum key distribution."
+      }
+    },
+    {
+      "faculty_id": "hameeza-ahmed",
+      "layer_target": "layer2_resolver_fixture",
+      "load_active": false,
+      "note": "Verify every field against the professors table. The DB is the source of truth. Do not insert as Layer 1 rows: short names like 'muhammad ali' are substrings of other names.",
+      "display_name": "Dr. Hameeza Ahmed",
+      "designation": "Assistant Professor",
+      "research_areas": "Big data computing, Compiler optimization, Machine learning, Computer architecture",
+      "name_variants": [
+        "dr hameeza ahmed",
+        "hameeza ahmed",
+        "hamiza ahmed",
+        "hameeza"
+      ],
+      "en": {
+        "questions": [
+          "who is dr hameeza ahmed",
+          "tell me about hameeza ahmed",
+          "what does hamiza ahmed research",
+          "hameeza research areas"
+        ],
+        "answer": "Dr. Hameeza Ahmed is Assistant Professor in the Department of Computer & Information Systems Engineering. Research areas: Big data computing, Compiler optimization, Machine learning, Computer architecture."
+      },
+      "ru": {
+        "questions": [
+          "dr hameeza ahmed kaun hain",
+          "hameeza ahmed ke baare mein batao",
+          "hamiza ahmed ka research area kya hai",
+          "hameeza kis cheez par research karte hain"
+        ],
+        "answer": "Dr. Hameeza Ahmed CISE department mein Assistant Professor hain. Research areas: Big data computing, Compiler optimization, Machine learning, Computer architecture."
+      }
+    },
+    {
+      "faculty_id": "syeda-hafsa-ahmed",
+      "layer_target": "layer2_resolver_fixture",
+      "load_active": false,
+      "note": "Verify every field against the professors table. The DB is the source of truth. Do not insert as Layer 1 rows: short names like 'muhammad ali' are substrings of other names.",
+      "display_name": "Ms. Syeda Hafsa Ahmed",
+      "designation": "Lecturer",
+      "research_areas": "Deep learning, Embedded computing, Approximate computing, Computer vision (Faster R-CNN), Point-of-care devices",
+      "name_variants": [
+        "ms syeda hafsa ahmed",
+        "syeda hafsa ahmed",
+        "hafsa ahmed",
+        "syeda hafsa",
+        "hafsa"
+      ],
+      "en": {
+        "questions": [
+          "who is ms syeda hafsa ahmed",
+          "tell me about syeda hafsa ahmed",
+          "what does hafsa ahmed research",
+          "syeda hafsa research areas",
+          "what is hafsa designation",
+          "who is dr syeda hafsa ahmed"
+        ],
+        "answer": "Ms. Syeda Hafsa Ahmed is Lecturer in the Department of Computer & Information Systems Engineering. Research areas: Deep learning, Embedded computing, Approximate computing, Computer vision (Faster R-CNN), Point-of-care devices."
+      },
+      "ru": {
+        "questions": [
+          "ms syeda hafsa ahmed kaun hain",
+          "syeda hafsa ahmed ke baare mein batao",
+          "hafsa ahmed ka research area kya hai",
+          "syeda hafsa kis cheez par research karte hain",
+          "hafsa ka profile dikhao",
+          "dr syeda hafsa ahmed kaun hain"
+        ],
+        "answer": "Ms. Syeda Hafsa Ahmed CISE department mein Lecturer hain. Research areas: Deep learning, Embedded computing, Approximate computing, Computer vision (Faster R-CNN), Point-of-care devices."
+      }
+    },
+    {
+      "faculty_id": "engr.-ali-akhtar",
+      "layer_target": "layer2_resolver_fixture",
+      "load_active": false,
+      "note": "Verify every field against the professors table. The DB is the source of truth. Do not insert as Layer 1 rows: short names like 'muhammad ali' are substrings of other names.",
+      "display_name": "Mr. Engr. Ali Akhtar",
+      "designation": "Lecturer / Industry Liaison",
+      "research_areas": "Health information systems, OBE MIS, VR cycling simulators, Assistive tech for autism",
+      "name_variants": [
+        "mr engr ali akhtar",
+        "engr. ali akhtar",
+        "ali akhtar",
+        "engr ali akhtar"
+      ],
+      "en": {
+        "questions": [
+          "who is mr engr ali akhtar",
+          "tell me about engr. ali akhtar",
+          "what does ali akhtar research",
+          "engr ali akhtar research areas",
+          "who is dr engr. ali akhtar"
+        ],
+        "answer": "Mr. Engr. Ali Akhtar is Lecturer / Industry Liaison in the Department of Computer & Information Systems Engineering. Research areas: Health information systems, OBE MIS, VR cycling simulators, Assistive tech for autism."
+      },
+      "ru": {
+        "questions": [
+          "mr engr ali akhtar kaun hain",
+          "engr. ali akhtar ke baare mein batao",
+          "ali akhtar ka research area kya hai",
+          "engr ali akhtar kis cheez par research karte hain",
+          "dr engr. ali akhtar kaun hain"
+        ],
+        "answer": "Mr. Engr. Ali Akhtar CISE department mein Lecturer / Industry Liaison hain. Research areas: Health information systems, OBE MIS, VR cycling simulators, Assistive tech for autism."
+      }
+    },
+    {
+      "faculty_id": "muhammad-ali-ismail",
+      "layer_target": "layer2_resolver_fixture",
+      "load_active": false,
+      "note": "Verify every field against the professors table. The DB is the source of truth. Do not insert as Layer 1 rows: short names like 'muhammad ali' are substrings of other names.",
+      "display_name": "Dr. Muhammad Ali Ismail",
+      "designation": "Professor / Exascale Lab PI",
+      "research_areas": "Multicore processors, Binary-tree cache, Big data, Cloud, SDN, Many-objective optimization",
+      "name_variants": [
+        "dr muhammad ali ismail",
+        "muhammad ali ismail",
+        "ali ismail"
+      ],
+      "en": {
+        "questions": [
+          "who is dr muhammad ali ismail",
+          "tell me about muhammad ali ismail",
+          "what does ali ismail research"
+        ],
+        "answer": "Dr. Muhammad Ali Ismail is Professor / Exascale Lab PI in the Department of Computer & Information Systems Engineering. Research areas: Multicore processors, Binary-tree cache, Big data, Cloud, SDN, Many-objective optimization."
+      },
+      "ru": {
+        "questions": [
+          "dr muhammad ali ismail kaun hain",
+          "muhammad ali ismail ke baare mein batao",
+          "ali ismail ka research area kya hai"
+        ],
+        "answer": "Dr. Muhammad Ali Ismail CISE department mein Professor / Exascale Lab PI hain. Research areas: Multicore processors, Binary-tree cache, Big data, Cloud, SDN, Many-objective optimization."
+      }
+    },
+    {
+      "faculty_id": "umar-iftikhar",
+      "layer_target": "layer2_resolver_fixture",
+      "load_active": false,
+      "note": "Verify every field against the professors table. The DB is the source of truth. Do not insert as Layer 1 rows: short names like 'muhammad ali' are substrings of other names.",
+      "display_name": "Dr. Umar Iftikhar",
+      "designation": "Assistant Professor",
+      "research_areas": "Cybersecurity, Cyber threat detection, Intrusion detection systems (IDS), IoT security",
+      "name_variants": [
+        "dr umar iftikhar",
+        "umar iftikhar",
+        "umer iftikhar",
+        "umar iftikhaar"
+      ],
+      "en": {
+        "questions": [
+          "who is dr umar iftikhar",
+          "tell me about umar iftikhar",
+          "what does umer iftikhar research",
+          "umar iftikhaar research areas"
+        ],
+        "answer": "Dr. Umar Iftikhar is Assistant Professor in the Department of Computer & Information Systems Engineering. Research areas: Cybersecurity, Cyber threat detection, Intrusion detection systems (IDS), IoT security."
+      },
+      "ru": {
+        "questions": [
+          "dr umar iftikhar kaun hain",
+          "umar iftikhar ke baare mein batao",
+          "umer iftikhar ka research area kya hai",
+          "umar iftikhaar kis cheez par research karte hain"
+        ],
+        "answer": "Dr. Umar Iftikhar CISE department mein Assistant Professor hain. Research areas: Cybersecurity, Cyber threat detection, Intrusion detection systems (IDS), IoT security."
+      }
+    },
+    {
+      "faculty_id": "muhammad-khurram",
+      "layer_target": "layer2_resolver_fixture",
+      "load_active": false,
+      "note": "Verify every field against the professors table. The DB is the source of truth. Do not insert as Layer 1 rows: short names like 'muhammad ali' are substrings of other names.",
+      "display_name": "Dr. Muhammad Khurram",
+      "designation": "Professor (BPS-21) / RCAI Director",
+      "research_areas": "AI & Computer vision, Smart cities, RF IC design, VLSI & DSP, Agritech (Crop2x), 5G networks",
+      "name_variants": [
+        "dr muhammad khurram",
+        "muhammad khurram",
+        "khurram",
+        "khuram"
+      ],
+      "en": {
+        "questions": [
+          "who is dr muhammad khurram",
+          "tell me about muhammad khurram",
+          "what does khurram research",
+          "khuram research areas"
+        ],
+        "answer": "Dr. Muhammad Khurram is Professor (BPS-21) / RCAI Director in the Department of Computer & Information Systems Engineering. Research areas: AI & Computer vision, Smart cities, RF IC design, VLSI & DSP, Agritech (Crop2x), 5G networks."
+      },
+      "ru": {
+        "questions": [
+          "dr muhammad khurram kaun hain",
+          "muhammad khurram ke baare mein batao",
+          "khurram ka research area kya hai",
+          "khuram kis cheez par research karte hain"
+        ],
+        "answer": "Dr. Muhammad Khurram CISE department mein Professor (BPS-21) / RCAI Director hain. Research areas: AI & Computer vision, Smart cities, RF IC design, VLSI & DSP, Agritech (Crop2x), 5G networks."
+      }
+    },
+    {
+      "faculty_id": "shahab-tahzeeb",
+      "layer_target": "layer2_resolver_fixture",
+      "load_active": false,
+      "note": "Verify every field against the professors table. The DB is the source of truth. Do not insert as Layer 1 rows: short names like 'muhammad ali' are substrings of other names.",
+      "display_name": "Dr. Shahab Tahzeeb",
+      "designation": "Associate Professor / AI Lab In-Charge",
+      "research_areas": "Computer architecture, Bioinformatics, Protein function prediction, Mathematical modeling",
+      "name_variants": [
+        "dr shahab tahzeeb",
+        "shahab tahzeeb",
+        "shahab tehzeeb",
+        "tahzeeb"
+      ],
+      "en": {
+        "questions": [
+          "who is dr shahab tahzeeb",
+          "tell me about shahab tahzeeb",
+          "what does shahab tehzeeb research",
+          "tahzeeb research areas"
+        ],
+        "answer": "Dr. Shahab Tahzeeb is Associate Professor / AI Lab In-Charge in the Department of Computer & Information Systems Engineering. Research areas: Computer architecture, Bioinformatics, Protein function prediction, Mathematical modeling."
+      },
+      "ru": {
+        "questions": [
+          "dr shahab tahzeeb kaun hain",
+          "shahab tahzeeb ke baare mein batao",
+          "shahab tehzeeb ka research area kya hai",
+          "tahzeeb kis cheez par research karte hain"
+        ],
+        "answer": "Dr. Shahab Tahzeeb CISE department mein Associate Professor / AI Lab In-Charge hain. Research areas: Computer architecture, Bioinformatics, Protein function prediction, Mathematical modeling."
+      }
+    },
+    {
+      "faculty_id": "fauzia-yasir",
+      "layer_target": "layer2_resolver_fixture",
+      "load_active": false,
+      "note": "Verify every field against the professors table. The DB is the source of truth. Do not insert as Layer 1 rows: short names like 'muhammad ali' are substrings of other names.",
+      "display_name": "Ms. Fauzia Yasir",
+      "designation": "Assistant Professor",
+      "research_areas": "Embedded systems, Urdu Optical Character Recognition (OCR), NLP, Transformers, FPGA cores",
+      "name_variants": [
+        "ms fauzia yasir",
+        "fauzia yasir",
+        "fozia yasir",
+        "fauzia"
+      ],
+      "en": {
+        "questions": [
+          "who is ms fauzia yasir",
+          "tell me about fauzia yasir",
+          "what does fozia yasir research",
+          "fauzia research areas",
+          "who is dr fauzia yasir"
+        ],
+        "answer": "Ms. Fauzia Yasir is Assistant Professor in the Department of Computer & Information Systems Engineering. Research areas: Embedded systems, Urdu Optical Character Recognition (OCR), NLP, Transformers, FPGA cores."
+      },
+      "ru": {
+        "questions": [
+          "ms fauzia yasir kaun hain",
+          "fauzia yasir ke baare mein batao",
+          "fozia yasir ka research area kya hai",
+          "fauzia kis cheez par research karte hain",
+          "dr fauzia yasir kaun hain"
+        ],
+        "answer": "Ms. Fauzia Yasir CISE department mein Assistant Professor hain. Research areas: Embedded systems, Urdu Optical Character Recognition (OCR), NLP, Transformers, FPGA cores."
+      }
+    }
+  ],
+  "known_unanswered": [
+    {
+      "intent_id": "R01",
+      "category": "known_unanswered",
+      "load_active": false,
+      "log_to": "chatbot_unanswered",
+      "topic_en": "attendance rules",
+      "topic_ru": "attendance ke rules",
+      "en": {
+        "questions": [
+          "what is the attendance requirement",
+          "how much attendance do i need",
+          "what happens if my attendance is short",
+          "minimum attendance percentage",
+          "attendance shortage rules"
+        ],
+        "answer": "I don't have verified records for attendance rules. The departmental notice board or the academic advisor can confirm this, and I've noted your question so it can be added."
+      },
+      "ru": {
+        "questions": [
+          "attendance ki requirement kya hai",
+          "kitni attendance zaroori hai",
+          "attendance kam ho to kya hoga",
+          "minimum attendance kitni hai",
+          "attendance shortage ke rules"
+        ],
+        "answer": "attendance ke rules ke baare mein mere paas verified record nahi hai. Department ka notice board ya academic advisor confirm kar sakta hai, aur maine tumhara sawal note kar liya hai taake isay add kiya ja sake."
+      }
+    },
+    {
+      "intent_id": "R02",
+      "category": "known_unanswered",
+      "load_active": false,
+      "log_to": "chatbot_unanswered",
+      "topic_en": "fee amounts and deadlines",
+      "topic_ru": "fees aur deadlines",
+      "en": {
+        "questions": [
+          "how much is the semester fee",
+          "when is the fee deadline",
+          "fee structure",
+          "late fee rules",
+          "how do i pay my fee"
+        ],
+        "answer": "I don't have verified records for fee amounts and deadlines. The departmental notice board or the academic advisor can confirm this, and I've noted your question so it can be added."
+      },
+      "ru": {
+        "questions": [
+          "semester ki fees kitni hai",
+          "fees ki last date kab hai",
+          "fee structure kya hai",
+          "late fee ke rules",
+          "fees kaise jama karun"
+        ],
+        "answer": "fees aur deadlines ke baare mein mere paas verified record nahi hai. Department ka notice board ya academic advisor confirm kar sakta hai, aur maine tumhara sawal note kar liya hai taake isay add kiya ja sake."
+      }
+    },
+    {
+      "intent_id": "R03",
+      "category": "known_unanswered",
+      "load_active": false,
+      "log_to": "chatbot_unanswered",
+      "topic_en": "scholarships and financial aid",
+      "topic_ru": "scholarship aur financial aid",
+      "en": {
+        "questions": [
+          "are there scholarships",
+          "how do i apply for financial aid",
+          "scholarship criteria",
+          "merit scholarship",
+          "need based aid"
+        ],
+        "answer": "I don't have verified records for scholarships and financial aid. The departmental notice board or the academic advisor can confirm this, and I've noted your question so it can be added."
+      },
+      "ru": {
+        "questions": [
+          "scholarship milti hai kya",
+          "financial aid ke liye apply kaise karun",
+          "scholarship ki shartein",
+          "merit scholarship kya hai",
+          "need based aid kaise milti hai"
+        ],
+        "answer": "scholarship aur financial aid ke baare mein mere paas verified record nahi hai. Department ka notice board ya academic advisor confirm kar sakta hai, aur maine tumhara sawal note kar liya hai taake isay add kiya ja sake."
+      }
+    },
+    {
+      "intent_id": "R04",
+      "category": "known_unanswered",
+      "load_active": false,
+      "log_to": "chatbot_unanswered",
+      "topic_en": "hostel",
+      "topic_ru": "hostel",
+      "en": {
+        "questions": [
+          "is there a hostel",
+          "how do i apply for the hostel",
+          "hostel fees",
+          "hostel rules",
+          "hostel availability"
+        ],
+        "answer": "I don't have verified records for hostel. The departmental notice board or the academic advisor can confirm this, and I've noted your question so it can be added."
+      },
+      "ru": {
+        "questions": [
+          "hostel hai kya",
+          "hostel ke liye apply kaise karun",
+          "hostel ki fees",
+          "hostel ke rules",
+          "hostel mein jagah milti hai kya"
+        ],
+        "answer": "hostel ke baare mein mere paas verified record nahi hai. Department ka notice board ya academic advisor confirm kar sakta hai, aur maine tumhara sawal note kar liya hai taake isay add kiya ja sake."
+      }
+    },
+    {
+      "intent_id": "R05",
+      "category": "known_unanswered",
+      "load_active": false,
+      "log_to": "chatbot_unanswered",
+      "topic_en": "exam schedule",
+      "topic_ru": "exam schedule",
+      "en": {
+        "questions": [
+          "when are the exams",
+          "datesheet",
+          "exam schedule",
+          "midterm dates",
+          "final exam dates"
+        ],
+        "answer": "I don't have verified records for exam schedule. The departmental notice board or the academic advisor can confirm this, and I've noted your question so it can be added."
+      },
+      "ru": {
+        "questions": [
+          "exams kab hain",
+          "datesheet kab aayegi",
+          "exam schedule kya hai",
+          "midterm kab hain",
+          "final exams kab hain"
+        ],
+        "answer": "exam schedule ke baare mein mere paas verified record nahi hai. Department ka notice board ya academic advisor confirm kar sakta hai, aur maine tumhara sawal note kar liya hai taake isay add kiya ja sake."
+      }
+    },
+    {
+      "intent_id": "R06",
+      "category": "known_unanswered",
+      "load_active": false,
+      "log_to": "chatbot_unanswered",
+      "topic_en": "registration and enrollment dates",
+      "topic_ru": "registration aur enrollment ki dates",
+      "en": {
+        "questions": [
+          "when does registration open",
+          "course registration dates",
+          "enrollment deadline",
+          "last date to register courses",
+          "when can i enroll"
+        ],
+        "answer": "I don't have verified records for registration and enrollment dates. The departmental notice board or the academic advisor can confirm this, and I've noted your question so it can be added."
+      },
+      "ru": {
+        "questions": [
+          "registration kab khulti hai",
+          "course registration ki dates",
+          "enrollment ki deadline",
+          "course register karne ki last date",
+          "enrollment kab hoti hai"
+        ],
+        "answer": "registration aur enrollment ki dates ke baare mein mere paas verified record nahi hai. Department ka notice board ya academic advisor confirm kar sakta hai, aur maine tumhara sawal note kar liya hai taake isay add kiya ja sake."
+      }
+    },
+    {
+      "intent_id": "R07",
+      "category": "known_unanswered",
+      "load_active": false,
+      "log_to": "chatbot_unanswered",
+      "topic_en": "add/drop dates",
+      "topic_ru": "add/drop ki dates",
+      "en": {
+        "questions": [
+          "when is add drop",
+          "last date to drop a course",
+          "can i withdraw from a course",
+          "course withdrawal rules",
+          "add drop period"
+        ],
+        "answer": "I don't have verified records for add/drop dates. The departmental notice board or the academic advisor can confirm this, and I've noted your question so it can be added."
+      },
+      "ru": {
+        "questions": [
+          "add drop kab hota hai",
+          "course drop karne ki last date",
+          "kya main course withdraw kar sakta hoon",
+          "course withdrawal ke rules",
+          "add drop period kya hai"
+        ],
+        "answer": "add/drop ki dates ke baare mein mere paas verified record nahi hai. Department ka notice board ya academic advisor confirm kar sakta hai, aur maine tumhara sawal note kar liya hai taake isay add kiya ja sake."
+      }
+    },
+    {
+      "intent_id": "R08",
+      "category": "known_unanswered",
+      "load_active": false,
+      "log_to": "chatbot_unanswered",
+      "topic_en": "semester freeze and leave",
+      "topic_ru": "semester freeze aur leave",
+      "en": {
+        "questions": [
+          "how do i freeze a semester",
+          "can i take a semester off",
+          "semester leave rules",
+          "semester freeze process",
+          "deferment of semester"
+        ],
+        "answer": "I don't have verified records for semester freeze and leave. The departmental notice board or the academic advisor can confirm this, and I've noted your question so it can be added."
+      },
+      "ru": {
+        "questions": [
+          "semester freeze kaise karun",
+          "kya main semester chhutti pe ja sakta hoon",
+          "semester leave ke rules",
+          "semester freeze ka process",
+          "semester defer kaise hota hai"
+        ],
+        "answer": "semester freeze aur leave ke baare mein mere paas verified record nahi hai. Department ka notice board ya academic advisor confirm kar sakta hai, aur maine tumhara sawal note kar liya hai taake isay add kiya ja sake."
+      }
+    },
+    {
+      "intent_id": "R09",
+      "category": "known_unanswered",
+      "load_active": false,
+      "log_to": "chatbot_unanswered",
+      "topic_en": "transcript and degree requests",
+      "topic_ru": "transcript aur degree requests",
+      "en": {
+        "questions": [
+          "how do i get my transcript",
+          "degree certificate process",
+          "how to request a transcript",
+          "provisional certificate",
+          "duplicate degree"
+        ],
+        "answer": "I don't have verified records for transcript and degree requests. The departmental notice board or the academic advisor can confirm this, and I've noted your question so it can be added."
+      },
+      "ru": {
+        "questions": [
+          "transcript kaise milega",
+          "degree certificate ka process",
+          "transcript ke liye request kaise karun",
+          "provisional certificate kaise milta hai",
+          "duplicate degree kaise banti hai"
+        ],
+        "answer": "transcript aur degree requests ke baare mein mere paas verified record nahi hai. Department ka notice board ya academic advisor confirm kar sakta hai, aur maine tumhara sawal note kar liya hai taake isay add kiya ja sake."
+      }
+    },
+    {
+      "intent_id": "R10",
+      "category": "known_unanswered",
+      "load_active": false,
+      "log_to": "chatbot_unanswered",
+      "topic_en": "grade recheck and appeals",
+      "topic_ru": "grade recheck aur appeals",
+      "en": {
+        "questions": [
+          "how do i get my paper rechecked",
+          "grade appeal process",
+          "recheck marks",
+          "grade correction",
+          "paper re-evaluation"
+        ],
+        "answer": "I don't have verified records for grade recheck and appeals. The departmental notice board or the academic advisor can confirm this, and I've noted your question so it can be added."
+      },
+      "ru": {
+        "questions": [
+          "paper recheck kaise karwaun",
+          "grade appeal ka process",
+          "marks recheck kaise hote hain",
+          "grade correction kaise hoti hai",
+          "paper dobara check karwana hai"
+        ],
+        "answer": "grade recheck aur appeals ke baare mein mere paas verified record nahi hai. Department ka notice board ya academic advisor confirm kar sakta hai, aur maine tumhara sawal note kar liya hai taake isay add kiya ja sake."
+      }
+    },
+    {
+      "intent_id": "R11",
+      "category": "known_unanswered",
+      "load_active": false,
+      "log_to": "chatbot_unanswered",
+      "topic_en": "section change",
+      "topic_ru": "section change",
+      "en": {
+        "questions": [
+          "how do i change my section",
+          "section change process",
+          "can i switch sections",
+          "change batch section",
+          "section transfer"
+        ],
+        "answer": "I don't have verified records for section change. The departmental notice board or the academic advisor can confirm this, and I've noted your question so it can be added."
+      },
+      "ru": {
+        "questions": [
+          "section change kaise karun",
+          "section badalne ka process",
+          "kya main section badal sakta hoon",
+          "section transfer kaise hota hai",
+          "section change ki request kahan dun"
+        ],
+        "answer": "section change ke baare mein mere paas verified record nahi hai. Department ka notice board ya academic advisor confirm kar sakta hai, aur maine tumhara sawal note kar liya hai taake isay add kiya ja sake."
+      }
+    },
+    {
+      "intent_id": "R12",
+      "category": "known_unanswered",
+      "load_active": false,
+      "log_to": "chatbot_unanswered",
+      "topic_en": "timetable",
+      "topic_ru": "timetable",
+      "en": {
+        "questions": [
+          "where is the timetable",
+          "class timetable",
+          "what is my timetable",
+          "lecture schedule",
+          "class timings"
+        ],
+        "answer": "I don't have verified records for timetable. The departmental notice board or the academic advisor can confirm this, and I've noted your question so it can be added."
+      },
+      "ru": {
+        "questions": [
+          "timetable kahan milega",
+          "class ka timetable",
+          "mera timetable kya hai",
+          "lectures ka schedule",
+          "class timings kya hain"
+        ],
+        "answer": "timetable ke baare mein mere paas verified record nahi hai. Department ka notice board ya academic advisor confirm kar sakta hai, aur maine tumhara sawal note kar liya hai taake isay add kiya ja sake."
+      }
+    },
+    {
+      "intent_id": "R13",
+      "category": "known_unanswered",
+      "load_active": false,
+      "log_to": "chatbot_unanswered",
+      "topic_en": "internship requirement",
+      "topic_ru": "internship ki requirement",
+      "en": {
+        "questions": [
+          "is internship mandatory",
+          "internship requirement",
+          "how do i get an internship",
+          "internship credit hours",
+          "industry internship rules"
+        ],
+        "answer": "I don't have verified records for internship requirement. The departmental notice board or the academic advisor can confirm this, and I've noted your question so it can be added."
+      },
+      "ru": {
+        "questions": [
+          "kya internship zaroori hai",
+          "internship ki requirement kya hai",
+          "internship kaise milti hai",
+          "internship ke credit hours",
+          "industry internship ke rules"
+        ],
+        "answer": "internship ki requirement ke baare mein mere paas verified record nahi hai. Department ka notice board ya academic advisor confirm kar sakta hai, aur maine tumhara sawal note kar liya hai taake isay add kiya ja sake."
+      }
+    },
+    {
+      "intent_id": "R14",
+      "category": "known_unanswered",
+      "load_active": false,
+      "log_to": "chatbot_unanswered",
+      "topic_en": "library and lab timings",
+      "topic_ru": "library aur lab timings",
+      "en": {
+        "questions": [
+          "library timings",
+          "lab timings",
+          "when does the library close",
+          "is the lab open on weekends",
+          "computer lab hours"
+        ],
+        "answer": "I don't have verified records for library and lab timings. The departmental notice board or the academic advisor can confirm this, and I've noted your question so it can be added."
+      },
+      "ru": {
+        "questions": [
+          "library ki timings",
+          "lab ki timings",
+          "library kab band hoti hai",
+          "kya lab weekend pe khuli hoti hai",
+          "computer lab ke ghante"
+        ],
+        "answer": "library aur lab timings ke baare mein mere paas verified record nahi hai. Department ka notice board ya academic advisor confirm kar sakta hai, aur maine tumhara sawal note kar liya hai taake isay add kiya ja sake."
+      }
+    },
+    {
+      "intent_id": "R15",
+      "category": "known_unanswered",
+      "load_active": false,
+      "log_to": "chatbot_unanswered",
+      "topic_en": "transport",
+      "topic_ru": "transport",
+      "en": {
+        "questions": [
+          "is there university transport",
+          "bus routes",
+          "transport fee",
+          "pick and drop",
+          "university bus timings"
+        ],
+        "answer": "I don't have verified records for transport. The departmental notice board or the academic advisor can confirm this, and I've noted your question so it can be added."
+      },
+      "ru": {
+        "questions": [
+          "university ki transport hai kya",
+          "bus routes kya hain",
+          "transport ki fees",
+          "pick and drop milti hai kya",
+          "university bus ki timings"
+        ],
+        "answer": "transport ke baare mein mere paas verified record nahi hai. Department ka notice board ya academic advisor confirm kar sakta hai, aur maine tumhara sawal note kar liya hai taake isay add kiya ja sake."
+      }
+    },
+    {
+      "intent_id": "R16",
+      "category": "known_unanswered",
+      "load_active": false,
+      "log_to": "chatbot_unanswered",
+      "topic_en": "student ID card",
+      "topic_ru": "student ID card",
+      "en": {
+        "questions": [
+          "how do i get a student id card",
+          "lost id card",
+          "id card replacement",
+          "student card process",
+          "id card fee"
+        ],
+        "answer": "I don't have verified records for student ID card. The departmental notice board or the academic advisor can confirm this, and I've noted your question so it can be added."
+      },
+      "ru": {
+        "questions": [
+          "student id card kaise milta hai",
+          "id card kho gaya",
+          "id card replacement kaise hoti hai",
+          "student card ka process",
+          "id card ki fees"
+        ],
+        "answer": "student ID card ke baare mein mere paas verified record nahi hai. Department ka notice board ya academic advisor confirm kar sakta hai, aur maine tumhara sawal note kar liya hai taake isay add kiya ja sake."
+      }
+    },
+    {
+      "intent_id": "R17",
+      "category": "known_unanswered",
+      "load_active": false,
+      "log_to": "chatbot_unanswered",
+      "topic_en": "who teaches a course",
+      "topic_ru": "kaun sa teacher kaun sa course parhata hai",
+      "en": {
+        "questions": [
+          "who teaches cs-218",
+          "who is the instructor for this course",
+          "which teacher takes this subject",
+          "course instructor",
+          "who is teaching this semester"
+        ],
+        "answer": "I don't have verified records for who teaches a course. The departmental notice board or the academic advisor can confirm this, and I've noted your question so it can be added."
+      },
+      "ru": {
+        "questions": [
+          "cs-218 kaun parhata hai",
+          "is course ka instructor kaun hai",
+          "yeh subject kaun sa teacher parhata hai",
+          "course ka teacher kaun hai",
+          "is semester kaun parha raha hai"
+        ],
+        "answer": "kaun sa teacher kaun sa course parhata hai ke baare mein mere paas verified record nahi hai. Department ka notice board ya academic advisor confirm kar sakta hai, aur maine tumhara sawal note kar liya hai taake isay add kiya ja sake."
+      }
+    },
+    {
+      "intent_id": "R18",
+      "category": "known_unanswered",
+      "load_active": false,
+      "log_to": "chatbot_unanswered",
+      "topic_en": "faculty contact details and office hours",
+      "topic_ru": "faculty ke contact details aur office hours",
+      "en": {
+        "questions": [
+          "professor email",
+          "professor office hours",
+          "how do i contact a teacher",
+          "faculty phone number",
+          "where is the professor's office"
+        ],
+        "answer": "I don't have verified records for faculty contact details and office hours. The departmental notice board or the academic advisor can confirm this, and I've noted your question so it can be added."
+      },
+      "ru": {
+        "questions": [
+          "professor ka email",
+          "professor ke office hours",
+          "teacher se rabta kaise karun",
+          "faculty ka phone number",
+          "professor ka office kahan hai"
+        ],
+        "answer": "faculty ke contact details aur office hours ke baare mein mere paas verified record nahi hai. Department ka notice board ya academic advisor confirm kar sakta hai, aur maine tumhara sawal note kar liya hai taake isay add kiya ja sake."
+      }
+    },
+    {
+      "intent_id": "R19",
+      "category": "known_unanswered",
+      "load_active": false,
+      "log_to": "chatbot_unanswered",
+      "topic_en": "detailed course syllabus",
+      "topic_ru": "course ka detailed syllabus",
+      "en": {
+        "questions": [
+          "what is the syllabus of this course",
+          "course outline",
+          "topics covered in cs-218",
+          "syllabus details",
+          "what chapters are in this course"
+        ],
+        "answer": "I don't have verified records for detailed course syllabus. The departmental notice board or the academic advisor can confirm this, and I've noted your question so it can be added."
+      },
+      "ru": {
+        "questions": [
+          "is course ka syllabus kya hai",
+          "course outline kya hai",
+          "cs-218 mein kaun se topics hain",
+          "syllabus ki tafseel",
+          "is course mein kaun se chapters hain"
+        ],
+        "answer": "course ka detailed syllabus ke baare mein mere paas verified record nahi hai. Department ka notice board ya academic advisor confirm kar sakta hai, aur maine tumhara sawal note kar liya hai taake isay add kiya ja sake."
+      }
+    },
+    {
+      "intent_id": "R20",
+      "category": "known_unanswered",
+      "load_active": false,
+      "log_to": "chatbot_unanswered",
+      "topic_en": "admission",
+      "topic_ru": "admission",
+      "en": {
+        "questions": [
+          "how do i get admission",
+          "admission requirements",
+          "admission deadline",
+          "merit list",
+          "entry test"
+        ],
+        "answer": "I don't have verified records for admission. The departmental notice board or the academic advisor can confirm this, and I've noted your question so it can be added."
+      },
+      "ru": {
+        "questions": [
+          "admission kaise milta hai",
+          "admission ki requirements",
+          "admission ki last date",
+          "merit list kab aati hai",
+          "entry test kya hai"
+        ],
+        "answer": "admission ke baare mein mere paas verified record nahi hai. Department ka notice board ya academic advisor confirm kar sakta hai, aur maine tumhara sawal note kar liya hai taake isay add kiya ja sake."
+      }
+    },
+    {
+      "intent_id": "R21",
+      "category": "known_unanswered",
+      "load_active": false,
+      "log_to": "chatbot_unanswered",
+      "topic_en": "course exemptions and transfer credits",
+      "topic_ru": "course exemption aur transfer credits",
+      "en": {
+        "questions": [
+          "can i transfer credits",
+          "course exemption",
+          "credit transfer rules",
+          "can i skip a course",
+          "equivalent course"
+        ],
+        "answer": "I don't have verified records for course exemptions and transfer credits. The departmental notice board or the academic advisor can confirm this, and I've noted your question so it can be added."
+      },
+      "ru": {
+        "questions": [
+          "kya main credits transfer kar sakta hoon",
+          "course exemption kaise milti hai",
+          "credit transfer ke rules",
+          "kya main koi course skip kar sakta hoon",
+          "equivalent course kaun sa hota hai"
+        ],
+        "answer": "course exemption aur transfer credits ke baare mein mere paas verified record nahi hai. Department ka notice board ya academic advisor confirm kar sakta hai, aur maine tumhara sawal note kar liya hai taake isay add kiya ja sake."
+      }
+    },
+    {
+      "intent_id": "R22",
+      "category": "known_unanswered",
+      "load_active": false,
+      "log_to": "chatbot_unanswered",
+      "topic_en": "academic probation and warnings",
+      "topic_ru": "academic probation aur warnings",
+      "en": {
+        "questions": [
+          "what is academic probation",
+          "what happens if my cgpa is below 2",
+          "academic warning rules",
+          "probation rules",
+          "can i be dismissed for low cgpa"
+        ],
+        "answer": "I don't have verified records for academic probation and warnings. The departmental notice board or the academic advisor can confirm this, and I've noted your question so it can be added."
+      },
+      "ru": {
+        "questions": [
+          "academic probation kya hoti hai",
+          "cgpa 2 se kam ho to kya hoga",
+          "academic warning ke rules",
+          "probation ke rules",
+          "kam cgpa pe degree se nikala ja sakta hai kya"
+        ],
+        "answer": "academic probation aur warnings ke baare mein mere paas verified record nahi hai. Department ka notice board ya academic advisor confirm kar sakta hai, aur maine tumhara sawal note kar liya hai taake isay add kiya ja sake."
+      }
+    }
+  ],
+  "emotion": {
+    "note": "Client-gate fixtures (usePersona.ts). Priority: DISTRESS > SINCERITY > E-HOPELESS > other E-* > persona > smalltalk. Lines are DRAFTS for Hurraim to edit.",
+    "intents": {
+      "E-STRESS": {
+        "en_questions": [
+          "i am stressed",
+          "i'm so stressed out",
+          "too much work and i can't cope",
+          "i feel overwhelmed",
+          "i'm burnt out",
+          "feeling exhausted with uni",
+          "i can't handle this semester",
+          "this semester is too much"
+        ],
+        "ru_questions": [
+          "bohat tension ho rahi hai",
+          "stress ho raha hai",
+          "main bohat pareshan hoon",
+          "thak gaya hoon is semester se",
+          "semester ka bohat pressure hai",
+          "mujhse sambhal nahi raha",
+          "parhai ki tension hai",
+          "dimagh kharab ho gaya hai parhai se"
+        ]
+      },
+      "E-PANIC": {
+        "en_questions": [
+          "i am panicking",
+          "i'm freaking out",
+          "help i'm scared",
+          "i don't know what to do",
+          "i'm in a panic about my grades",
+          "i'm really scared right now",
+          "what do i do i'm panicking"
+        ],
+        "ru_questions": [
+          "ghabra gaya hoon",
+          "bohat ghabrahat ho rahi hai",
+          "samajh nahi aa raha kya karun",
+          "dil ghabra raha hai",
+          "mujhe dar lag raha hai",
+          "main panic mein hoon",
+          "ab kya karun main ghabra gaya"
+        ]
+      },
+      "E-FAIL": {
+        "en_questions": [
+          "i failed a course",
+          "i got an f",
+          "i have a backlog",
+          "i failed cs-218",
+          "will i graduate if i failed",
+          "i failed my exam",
+          "i failed a prerequisite and i'm worried"
+        ],
+        "ru_questions": [
+          "fail ho gaya hoon",
+          "f aa gaya hai",
+          "backlog aa gaya",
+          "paper kharab ho gaya aur fail ho gaya",
+          "ek course mein fail ho gaya",
+          "kya fail hone ke baad bhi graduate ho sakta hoon",
+          "prerequisite fail ho gaya mujhe tension hai"
+        ]
+      },
+      "E-LOWCGPA": {
+        "en_questions": [
+          "my cgpa is low",
+          "my cgpa dropped",
+          "my cgpa is below 2",
+          "i'm worried about my cgpa",
+          "will my low cgpa stop me graduating",
+          "my cgpa is really bad"
+        ],
+        "ru_questions": [
+          "mera cgpa kam hai",
+          "cgpa gir gaya hai",
+          "cgpa 2 se neeche hai",
+          "cgpa ki bohat tension hai",
+          "kam cgpa se degree ruk jayegi kya",
+          "mera cgpa bohat kharab hai"
+        ]
+      },
+      "E-EXAM": {
+        "en_questions": [
+          "i have an exam tomorrow and i'm not prepared",
+          "i'm scared of the exam",
+          "i haven't studied anything",
+          "exam tomorrow help",
+          "i'm not ready for my paper"
+        ],
+        "ru_questions": [
+          "kal paper hai aur tayyari nahi",
+          "paper se dar lag raha hai",
+          "kuch nahi parha abhi tak",
+          "kal exam hai madad karo",
+          "main paper ke liye ready nahi hoon"
+        ]
+      },
+      "E-DEMOTIVATED": {
+        "en_questions": [
+          "i have no motivation",
+          "i want to quit",
+          "what's the point of studying",
+          "i lost interest in my degree",
+          "thinking of dropping out",
+          "i don't feel like studying"
+        ],
+        "ru_questions": [
+          "dil nahi lag raha",
+          "padhne ka mann nahi karta",
+          "degree chhor doon kya",
+          "parhai mein interest khatam ho gaya",
+          "chhorna chahta hoon sab kuch",
+          "padhne ka koi faida nahi"
+        ]
+      },
+      "E-HOPELESS": {
+        "en_questions": [
+          "i can't do this anymore",
+          "everything is ruined",
+          "i give up on my degree",
+          "nothing is working out",
+          "i feel like a failure"
+        ],
+        "ru_questions": [
+          "mujhse nahi hoga",
+          "sab kharab ho gaya",
+          "main haar gaya hoon",
+          "himmat khatam ho gayi",
+          "mujhe lagta hai main nakaam hoon"
+        ]
+      }
+    },
+    "motivation_pool": {
+      "general": {
+        "en": [
+          "Take one breath first. This is a problem with steps, not a verdict on you.",
+          "You don't have to fix everything today, only the next small thing.",
+          "Plenty of students have felt exactly this and found a way forward."
+        ],
+        "ru": [
+          "Ek lamba saans lo, yeh masla hai, tumhari qeemat ka faisla nahi.",
+          "Sab kuch aaj theek karna zaroori nahi, bas agla chhota qadam dekhte hain.",
+          "Bohat se students yahan se guzre hain aur raasta nikal liya hai."
+        ]
+      },
+      "E-PANIC": {
+        "en": [
+          "Slow down for a second. Panic makes everything look bigger than it is.",
+          "Breathe, then we'll go through it one piece at a time."
+        ],
+        "ru": [
+          "Pehle thoda ruk jao, ghabrahat mein masla bada lagta hai.",
+          "Saans lo, phir ek ek cheez dekhte hain."
+        ]
+      },
+      "E-FAIL": {
+        "en": [
+          "One failed course isn't the end of the road. Let's look at what the rules actually allow.",
+          "A setback is not the whole story; here's what you can do next."
+        ],
+        "ru": [
+          "Ek course fail hona poori degree ka faisla nahi, dekhte hain rules kya kehte hain.",
+          "Yeh rukawat hai, anjaam nahi, chalo agla step dekhte hain."
+        ]
+      },
+      "E-LOWCGPA": {
+        "en": [
+          "A CGPA can be rebuilt one semester at a time. Let's look at the facts first."
+        ],
+        "ru": [
+          "CGPA ek semester mein nahi banta bigarta, pehle facts dekh lete hain."
+        ]
+      },
+      "E-EXAM": {
+        "en": [
+          "Even a small, focused revision session today helps. You can do this."
+        ],
+        "ru": [
+          "Aaj ki chhoti si focused revision bhi kaam aati hai, tum kar sakte ho."
+        ]
+      },
+      "E-DEMOTIVATED": {
+        "en": [
+          "Feeling this way is common, and it's worth talking through before making any big decision."
+        ],
+        "ru": [
+          "Aisa lagna aam baat hai, bara faisla karne se pehle thoda baat kar lete hain."
+        ]
+      },
+      "E-HOPELESS": {
+        "en": [
+          "I'm glad you said it out loud. You don't have to carry this alone."
+        ],
+        "ru": [
+          "Achha kiya ke tumne bata diya, yeh sab akele uthana zaroori nahi."
+        ]
+      }
+    }
+  }
+}
