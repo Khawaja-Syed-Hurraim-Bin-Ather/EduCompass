@@ -129,24 +129,24 @@ describe('Institutional Governance & Verification Suite (Section 14, Cards A0–
   });
 
   describe('5. Client Bundle Secret Scan (Section 14.12, Rule 11)', () => {
-    it('verifies no service role keys or JWT secrets are present in apps/web client components', () => {
-      const webSrc = path.resolve(__dirname, '../../../web/src');
-      const files = fs.readdirSync(webSrc, { recursive: true }) as string[];
+    it('verifies no service role keys or JWT secrets are present in frontend client scripts', () => {
+      const frontendDir = path.resolve(__dirname, '../../../../frontend');
+      const targetDir = fs.existsSync(frontendDir) ? frontendDir : path.resolve(__dirname, '../../../web/src');
+      if (!fs.existsSync(targetDir)) return;
+      const files = fs.readdirSync(targetDir, { recursive: true }) as string[];
 
       for (const file of files) {
-        if (typeof file === 'string' && (file.endsWith('.ts') || file.endsWith('.tsx'))) {
-          const content = fs.readFileSync(path.join(webSrc, file), 'utf8');
+        if (typeof file === 'string' && (file.endsWith('.ts') || file.endsWith('.tsx') || file.endsWith('.js'))) {
+          const content = fs.readFileSync(path.join(targetDir, file), 'utf8');
 
           // Hard-coded secrets check (Rule 11) across ALL files
           expect(content).not.toMatch(/AdminPassword/);
           expect(content).not.toMatch(/sbp_[a-zA-Z0-9]{20,}/);
 
-          // Client components ('use client') must NEVER reference service role keys or server secrets
-          if (content.includes("'use client'") || content.includes('"use client"')) {
-            expect(content).not.toMatch(/SUPABASE_SERVICE_ROLE_KEY/);
-            expect(content).not.toMatch(/ADMIN_JWT_SECRET/);
-            expect(content).not.toMatch(/NEXTAUTH_SECRET/);
-          }
+          // Client code must NEVER reference service role keys or server secrets
+          expect(content).not.toMatch(/SUPABASE_SERVICE_ROLE_KEY/);
+          expect(content).not.toMatch(/ADMIN_JWT_SECRET/);
+          expect(content).not.toMatch(/NEXTAUTH_SECRET/);
         }
       }
     });

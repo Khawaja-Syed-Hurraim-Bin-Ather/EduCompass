@@ -44,8 +44,8 @@ export const LLM_CONFIG = {
   globalDailyBudget: Number(process.env.LLM_GLOBAL_DAILY_BUDGET || 100),
   provider: process.env.LLM_PROVIDER || 'gemini',
   providerFallback: process.env.LLM_PROVIDER_FALLBACK || 'xai',
-  model: process.env.LLM_MODEL || 'gemini-2.0-flash',
-  modelFallback: process.env.LLM_MODEL_FALLBACK || 'gemini-1.5-flash',
+  model: process.env.LLM_MODEL || 'gemini-3.5-flash-lite',
+  modelFallback: process.env.LLM_MODEL_FALLBACK || 'gemini-3.8-flash',
   embeddingModel: process.env.EMBEDDING_MODEL || 'gemini-embedding-001',
   embeddingDim: Number(process.env.EMBEDDING_DIM || 768),
 };
@@ -53,7 +53,7 @@ export const LLM_CONFIG = {
 // ─── PII Sanitizer (Rule #3) ──────────────────────────────────────────────────
 
 const EMAIL_REGEX = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
-const ROLL_NO_REGEX = /\b(?:\d{2}[A-Za-z]{2}\d{2,4}|(?:CS|CT|SE|CIS|CSE)-\d{2,4})\b/gi;
+const ROLL_NO_REGEX = /\b(?:\d{2}[A-Za-z]{2}\d{2,4}|(?:CS|CT|SE|CIS|CSE)-\d{4,5}|(?:CS|CT|SE|CIS|CSE)-0\d{2,3})\b/gi;
 const PHONE_REGEX = /(?:\+92|03)\d{2}[-\s]?\d{7}/g;
 
 /**
@@ -263,11 +263,16 @@ ${cleanContext}
 }
 
 /**
- * Call Gemini 2.0 / 1.5 REST API directly via fetch
+ * Call Gemini REST API directly via fetch with robust multi-model fallback
  */
 async function callGeminiAPI(prompt: string, modelName: string): Promise<LLMResponse> {
   const apiKey = process.env.GEMINI_API_KEY;
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+  const candidateModels = Array.from(new Set([
+    modelName,
+    LLM_CONFIG.modelFallback,
+    'gemini-3.5-flash-lite',
+    'gemini-3.8-flash',
+  ])).filter(Boolean);
 
   const payload = {
     system_instruction: {
@@ -284,51 +289,51 @@ async function callGeminiAPI(prompt: string, modelName: string): Promise<LLMResp
     },
   };
 
-  let res = await fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
+  let lastError = '';
+  for (const activeModel of candidateModels) {
+    try {
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${activeModel}:generateContent?key=${apiKey}`;
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(8000),
+      });
 
-  let activeModel = modelName;
-  if (!res.ok && modelName !== LLM_CONFIG.modelFallback) {
-    const fallbackEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${LLM_CONFIG.modelFallback}:generateContent?key=${apiKey}`;
-    const fallbackRes = await fetch(fallbackEndpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    if (fallbackRes.ok) {
-      res = fallbackRes;
-      activeModel = LLM_CONFIG.modelFallback;
+      if (!res.ok) {
+        lastError = await res.text();
+        console.warn(`[LLM-Gateway] Model ${activeModel} failed (${res.status}), trying next candidate...`);
+        continue;
+      }
+
+      const json = (await res.json()) as {
+        candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+        usageMetadata?: { promptTokenCount?: number; candidatesTokenCount?: number };
+      };
+
+      const answer = json.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
+      if (!answer) {
+        lastError = 'GEMINI_EMPTY_RESPONSE';
+        continue;
+      }
+
+      const tokensIn = json.usageMetadata?.promptTokenCount || 0;
+      const tokensOut = json.usageMetadata?.candidatesTokenCount || 0;
+
+      return {
+        answer,
+        tokensIn,
+        tokensOut,
+        provider: 'gemini',
+        model: activeModel,
+      };
+    } catch (err: any) {
+      lastError = err?.message || String(err);
+      console.warn(`[LLM-Gateway] Network error on ${activeModel}:`, lastError);
     }
   }
 
-  if (!res.ok) {
-    const errorBody = await res.text();
-    throw new Error(`Gemini API error (${res.status}): ${errorBody}`);
-  }
-
-  const json = (await res.json()) as {
-    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
-    usageMetadata?: { promptTokenCount?: number; candidatesTokenCount?: number };
-  };
-
-  const answer = json.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
-  if (!answer) {
-    // Empty response from Gemini (e.g. safety filter or model output error) — trigger fallback
-    throw new Error('GEMINI_EMPTY_RESPONSE: model returned no output text');
-  }
-  const tokensIn = json.usageMetadata?.promptTokenCount || 0;
-  const tokensOut = json.usageMetadata?.candidatesTokenCount || 0;
-
-  return {
-    answer,
-    tokensIn,
-    tokensOut,
-    provider: 'gemini',
-    model: activeModel,
-  };
+  throw new Error(`Gemini API error across all models: ${lastError}`);
 }
 
 /**

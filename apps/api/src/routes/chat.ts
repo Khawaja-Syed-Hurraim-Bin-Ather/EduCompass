@@ -367,40 +367,41 @@ chatRouter.post('/', async (req: Request, res: Response) => {
   }
 
   // ─── LAYER 3: LLM Generation ────────────────────────────────────────────────
-  if (contextText.length > 0) {
-    try {
-      const llmResult = await generateChatResponse({
-        userId,
-        question: message,
-        context: contextText,
-      });
+  const defaultContext = 'NED University of Engineering & Technology, Department of Computer & Information Systems Engineering (CISE). Program: BE Computer Systems Engineering (136 total credit hours over 8 semesters, minimum passing grade D / 1.0, minimum graduation CGPA 2.00, regular credit ceiling 18 CH, overload up to 21 CH with Chairman approval. Retake policy: higher grade replaces earlier grade in CGPA. FYP: CS-406 in semesters 7 and 8).';
+  const effectiveContext = contextText.length > 0 ? contextText : defaultContext;
 
+  try {
+    const llmResult = await generateChatResponse({
+      userId,
+      question: message,
+      context: effectiveContext,
+    });
+
+    res.json({
+      data: {
+        answer: llmResult.answer,
+        layer: 3,
+        source: `llm_${llmResult.provider}`,
+        sources,
+        disclaimer,
+      },
+    });
+    return;
+  } catch (err: unknown) {
+    console.warn('[Chat-Route] LLM generation failed, falling back:', err);
+    // Fallback: If retrieval context exists, return Layer 2 direct summary
+    if (sources.length > 0) {
       res.json({
         data: {
-          answer: llmResult.answer,
-          layer: 3,
-          source: `llm_${llmResult.provider}`,
+          answer: `Here are the matching NED CISE department records:\n\n` +
+            sources.map((s, idx) => `${idx + 1}. **${s.title}** (${s.type}): ${s.detail}`).join('\n'),
+          layer: 2,
+          source: 'retrieval_fallback',
           sources,
           disclaimer,
         },
       });
       return;
-    } catch (err: unknown) {
-      console.warn('[Chat-Route] LLM generation failed, falling back:', err);
-      // Fallback: If retrieval context exists, return Layer 2 direct summary
-      if (sources.length > 0) {
-        res.json({
-          data: {
-            answer: `Here are the matching NED CISE department records:\n\n` +
-              sources.map((s, idx) => `${idx + 1}. **${s.title}** (${s.type}): ${s.detail}`).join('\n'),
-            layer: 2,
-            source: 'retrieval_fallback',
-            sources,
-            disclaimer,
-          },
-        });
-        return;
-      }
     }
   }
 

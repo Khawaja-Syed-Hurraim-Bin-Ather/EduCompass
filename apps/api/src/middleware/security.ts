@@ -185,6 +185,8 @@ const ALLOWED_ORIGINS = (() => {
   return new Set([
     'http://localhost:3000',
     'http://127.0.0.1:3000',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
     ...(process.env.NEXT_PUBLIC_SITE_URL
       ? [process.env.NEXT_PUBLIC_SITE_URL]
       : []),
@@ -197,16 +199,19 @@ export function corsOriginValidator(
   callback: (err: Error | null, allow?: boolean) => void
 ): void {
   if (!origin) {
-    // Server-to-server or curl — allow in dev, block in prod
-    if (process.env.NODE_ENV === 'production') {
-      callback(new Error('CORS: No origin header in production requests'));
-    } else {
-      callback(null, true);
-    }
+    // Server-to-server or curl — allow
+    callback(null, true);
     return;
   }
 
-  if (ALLOWED_ORIGINS.has(origin)) {
+  // Allow registered origins, any *.vercel.app deployment, or local network/loopback
+  if (
+    ALLOWED_ORIGINS.has(origin) ||
+    ALLOWED_ORIGINS.has('*') ||
+    origin.endsWith('.vercel.app') ||
+    /^https?:\/\/localhost(:\d+)?$/.test(origin) ||
+    /^https?:\/\/127\.0\.0\.1(:\d+)?$/.test(origin)
+  ) {
     callback(null, true);
   } else {
     console.warn(`[CORS] Rejected origin: ${origin}`);

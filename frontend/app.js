@@ -503,7 +503,7 @@ routes['/assistant']={title:'Assistant',view(){
     if(best[0]==='t'){const t=T[0].t;return{t:`${t.title}: ${t.summary} Supporting courses: ${t.relevant_courses.slice(0,4).join(', ')}.`,src:'Roadmap'}}
     return{t:'Past FYPs on that: '+F.slice(0,3).map(x=>x.p.title).join('; ')+'.',src:'Database'}};
   const inp=$('#ci');inp.oninput=()=>$('#cc').textContent=inp.value.length;
-  $('#cf').onsubmit=e=>{
+  $('#cf').onsubmit=async e=>{
     e.preventDefault();const q=inp.value.trim();if(!q)return;say(q,true);inp.value='';$('#cc').textContent=0;
     if(window.Abdul)Abdul.onUserSend();
     if(/ignore (all|previous)|system prompt|jailbreak/i.test(q)){
@@ -521,17 +521,43 @@ routes['/assistant']={title:'Assistant',view(){
         return;
       }
     }
-    // 2. Department database retrieval
-    setTimeout(()=>{
-      const r=retrieve(q);
-      if(r){
-        say(r.t,false,r.src);
-        if(window.Abdul)Abdul.onResponse(1);
-      } else {
-        say("I don't have that specific record in my notes right now. Check the CISE notice board, or ask me about courses, prerequisites, supervisors, or my story on campus!",false,'Abdul Bari');
-        if(window.Abdul)Abdul.setState('idle');
+    // 2. Live API Call to Backend (Gemini LLM Gateway + 4-Layer Retrieval)
+    const apiUrl = window.EDUCOMPASS_CONFIG ? window.EDUCOMPASS_CONFIG.getApiUrl() : '';
+    let answered = false;
+    if(apiUrl){
+      try {
+        const res = await fetch(`${apiUrl}/api/v1/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: q })
+        });
+        if(res.ok){
+          const payload = await res.json();
+          if(payload?.data?.answer){
+            const d = payload.data;
+            const src = d.source === 'llm_gateway' ? `Gemini AI (Layer ${d.layer})` : (d.source_type ? `${d.source_type} (Layer ${d.layer})` : 'EduCompass Assistant');
+            say(d.answer, false, src);
+            if(window.Abdul) Abdul.onResponse(d.layer || 1);
+            answered = true;
+          }
+        }
+      } catch(err) {
+        console.warn('[EduCompass] Live API unreachable, using local engine:', err);
       }
-    }, 200);
+    }
+    // 3. Department database retrieval fallback
+    if(!answered){
+      setTimeout(()=>{
+        const r=retrieve(q);
+        if(r){
+          say(r.t,false,r.src + ' (Offline)');
+          if(window.Abdul)Abdul.onResponse(1);
+        } else {
+          say("I don't have that specific record in my notes right now. Check the CISE notice board, or ask me about courses, prerequisites, supervisors, or my story on campus!",false,'Abdul Bari');
+          if(window.Abdul)Abdul.setState('idle');
+        }
+      }, 150);
+    }
   };
   if(chat.done||chat.step>=Q.length){drawMsgs();planCard()}else{drawMsgs()}
   start();if(chat.step>=Q.length)planCard();

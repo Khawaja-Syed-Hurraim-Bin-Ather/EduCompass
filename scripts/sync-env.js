@@ -48,33 +48,6 @@ function writeEnv(dest, keys) {
   console.log(`✅  Written: ${path.relative(ROOT, dest)}`);
 }
 
-// ── apps/web/.env.local ──────────────────────────────────────────
-writeEnv(path.join(ROOT, 'apps', 'web', '.env.local'), [
-  'NEXT_PUBLIC_SUPABASE_URL',
-  'NEXT_PUBLIC_SUPABASE_ANON_KEY',
-  'NEXT_PUBLIC_SITE_URL',
-  'SUPABASE_SERVICE_ROLE_KEY',
-  'DATABASE_URL',
-  'NEXTAUTH_SECRET',
-  'ADMIN_SEED_EMAIL',
-  'LLM_PROVIDER',
-  'GEMINI_API_KEY',
-  'GROQ_API_KEY',
-  'XAI_API_KEY',
-  'LLM_PROVIDER_FALLBACK',
-  'LLM_MODEL',
-  'LLM_MODEL_FALLBACK',
-  'EMBEDDING_PROVIDER',
-  'EMBEDDING_MODEL',
-  'EMBEDDING_DIM',
-  'LLM_MAX_INPUT_CHARS',
-  'LLM_MAX_OUTPUT_TOKENS',
-  'LLM_USER_DAILY_LIMIT',
-  'LLM_GLOBAL_DAILY_BUDGET',
-  'IMPORTANCE_WEIGHTS',
-  'API_PORT',
-]);
-
 // ── apps/api/.env.local ──────────────────────────────────────────
 writeEnv(path.join(ROOT, 'apps', 'api', '.env.local'), [
   'NEXT_PUBLIC_SUPABASE_URL',

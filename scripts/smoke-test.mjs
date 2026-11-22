@@ -1,16 +1,13 @@
 /**
- * smoke-test.mjs  — F7 Integration Smoke Tests
+ * smoke-test.mjs — Integration Smoke Tests
  *
- * Verifies all major API routes are reachable on localhost.
+ * Verifies all major API routes and the main static SPA frontend on localhost.
  * Run: node scripts/smoke-test.mjs
- *
- * Rules:
- * - Rule #15: No live LLM calls in CI. Smoke test only checks connectivity/HTTP status.
- * - Prints PASS/FAIL per route and a final summary.
  */
 
 const API = 'http://localhost:4000';
-const WEB = 'http://localhost:3000';
+const WEB = 'http://localhost:5173';
+const WEB_MIRROR = 'http://localhost:3000';
 const TIMEOUT_MS = 8000;
 
 const TESTS = [
@@ -41,18 +38,15 @@ const TESTS = [
   // ── Security: unknown routes return 404 ────────────────────────────────
   { label: 'API 404 on /api/v1/unknown', url: `${API}/api/v1/unknown-route`, expectStatus: 404 },
 
-  // ── Web app pages (Next.js SSR health) ──────────────────────────────────
-  { label: 'WEB / (landing page)', url: `${WEB}/`, expectStatus: 200 },
-  { label: 'WEB /fyp', url: `${WEB}/fyp`, expectStatus: 200 },
-  { label: 'WEB /careers', url: `${WEB}/careers`, expectStatus: 200 },
-  { label: 'WEB /professors', url: `${WEB}/professors`, expectStatus: 200 },
-  { label: 'WEB /gpa', url: `${WEB}/gpa`, expectStatus: 200 },
-  { label: 'WEB /planner', url: `${WEB}/planner`, expectStatus: 200 },
-  { label: 'WEB /explorer', url: `${WEB}/explorer`, expectStatus: 200 },
-  { label: 'WEB /chat', url: `${WEB}/chat`, expectStatus: 200 },
-  { label: 'WEB /terms', url: `${WEB}/terms`, expectStatus: 200 },
-  { label: 'WEB /help', url: `${WEB}/help`, expectStatus: 200 },
-  { label: 'WEB /login (auth page)', url: `${WEB}/login`, expectStatus: 200 },
+  // ── Main Frontend (Static Demo SPA on 5173) ─────────────────────────────
+  { label: 'FRONTEND / (landing page on 5173)', url: `${WEB}/`, expectStatus: 200 },
+  { label: 'FRONTEND /styles.css', url: `${WEB}/styles.css`, expectStatus: 200 },
+  { label: 'FRONTEND /app.js', url: `${WEB}/app.js`, expectStatus: 200 },
+  { label: 'FRONTEND /data.js', url: `${WEB}/data.js`, expectStatus: 200 },
+  { label: 'FRONTEND /engines.js', url: `${WEB}/engines.js`, expectStatus: 200 },
+  { label: 'FRONTEND /data/career_tracks.json', url: `${WEB}/data/career_tracks.json`, expectStatus: 200 },
+  { label: 'FRONTEND /data/ned_cse_course_catalog.json', url: `${WEB}/data/ned_cse_course_catalog.json`, expectStatus: 200 },
+  { label: 'FRONTEND Mirror / (landing page on 3000)', url: `${WEB_MIRROR}/`, expectStatus: 200 },
 ];
 
 async function fetchWithTimeout(url, timeoutMs) {
@@ -70,9 +64,10 @@ async function fetchWithTimeout(url, timeoutMs) {
 }
 
 async function main() {
-  console.log('\n🔍  EduCompass F7 Smoke Tests\n' + '─'.repeat(60));
-  console.log(`  API: ${API}`);
-  console.log(`  WEB: ${WEB}\n`);
+  console.log('\n🔍  EduCompass Smoke Tests\n' + '─'.repeat(60));
+  console.log(`  API:            ${API}`);
+  console.log(`  MAIN FRONTEND:  ${WEB}`);
+  console.log(`  FRONTEND MIRROR:${WEB_MIRROR}\n`);
 
   let passed = 0;
   let failed = 0;
@@ -98,17 +93,16 @@ async function main() {
 
   if (failures.length > 0) {
     console.log('\n  Failed tests:');
-    failures.forEach((f) => {
+    for (const f of failures) {
       console.log(`    - ${f.label}: got ${f.got}, expected ${f.want}`);
-    });
-    console.log(
-      '\n  ⚠️  Make sure both servers are running:\n    pnpm dev:api   (in one terminal)\n    pnpm dev:web   (in another terminal)\n'
-    );
+    }
     process.exit(1);
   } else {
     console.log('\n  🎉 All smoke tests passed! EduCompass is fully operational.\n');
-    process.exit(0);
   }
 }
 
-main();
+main().catch(err => {
+  console.error('Fatal error running smoke tests:', err);
+  process.exit(1);
+});

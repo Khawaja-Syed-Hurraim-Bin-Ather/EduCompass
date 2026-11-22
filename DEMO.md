@@ -3,21 +3,26 @@
 
 ---
 
-## 🚀 Start Everything (Two Terminals)
+## 🚀 Start Everything (Two Terminals or `pnpm dev`)
+
+To start everything together:
+```powershell
+pnpm dev
+```
+
+Or in separate terminals:
 
 Open **Terminal 1** — Express API:
 ```powershell
-cd C:\Users\syedh\.gemini\antigravity\scratch\educompass
 pnpm dev:api
 ```
 Expect: `✅ EduCompass API v1.0 running on http://localhost:4000`
 
-Open **Terminal 2** — Next.js Web:
+Open **Terminal 2** — Main Frontend:
 ```powershell
-cd C:\Users\syedh\.gemini\antigravity\scratch\educompass
 pnpm dev:web
 ```
-Expect: `✓ Ready in Xs` → open http://localhost:3000
+Expect: `✅ EduCompass Main Frontend running on http://localhost:5173` (also mirrored on `http://localhost:3000`)
 
 ---
 
@@ -33,66 +38,41 @@ Expected output: `🎉 All smoke tests passed! EduCompass is fully operational.`
 
 ## 🗺️ Demo Walkthrough (Tester's Route)
 
-### 1. Landing Page — http://localhost:3000
+Main Frontend URL: **http://localhost:5173** (or http://localhost:3000)
+
+### 1. Landing Page — http://localhost:5173
 - Hero with stats (68 FYPs, 16 professors, 12 career tracks)
-- 8 feature cards with hover animations
-- CTAs: Dashboard / Browse FYP / Sign In
+- Academic workspace cards
+- Integrated Abdul Bari AI guide
 
-### 2. Sign Up / Sign In — http://localhost:3000/signup
-- Create account with any email + password
-- Supabase Auth — profile row auto-created via DB trigger
-- Log in and land on Dashboard
+### 2. Sign Up / Sign In — http://localhost:5173/#/login
+- Institutional sign-in & Student demo login
+- Role selection (Vice Chancellor, Department Chairman, Data Entry Operator, Student)
 
-### 3. Dashboard — http://localhost:3000/dashboard
-- All 8 feature cards with links
-- Academic profile snapshot (email, role, semester)
-- Admin badge shown if logged in as admin
+### 3. FYP Portal — http://localhost:5173/#/fyp
+- Browse FYP Archive & filter by domain/track
+- Project details modal, supervisor links, and similarity drawer
 
-### 4. FYP Portal — http://localhost:3000/fyp ⭐ Card M1
-- **Tab 1 — Browse FYP Archive:**
-  - Filter by year / domain / outcome
-  - Click card → Project details modal
-  - ☆ Star to shortlist (saved to Supabase)
-  - Click **✨ Similar FYPs** → similarity drawer with % match
-- **Tab 2 — Team Formation Board:**
-  - Browse open teammate requests
-  - Click **+ Pitch Your Team Idea** → form modal
-  - Contact lead via mailto: button (Rule #12)
-
-### 5. Professor Directory — http://localhost:3000/professors ⭐ Card M2
+### 4. Professor Directory — http://localhost:5173/#/professors
 - 16 faculty profiles with research domains
-- AI match score bar (domain + area + keyword overlap)
-- Click profile → modal with supervised FYPs, expertise
-- "Request Supervision" → pre-filled mailto: draft
+- Supervisor match score and direct mailto contact draft
 
-### 6. Degree Planner — http://localhost:3000/planner ⭐ Card M3
-- 8-semester grid — add/remove courses per semester
-- Live prerequisite violation pills
-- Workload badge: Light / Balanced / Overload
-- Export button → JSON schedule to clipboard
+### 5. Degree Planner — http://localhost:5173/#/planner
+- Interactive 8-semester course sequence
+- Prerequisite sequence validation and workload balancer
 
-### 7. Prerequisite Explorer — http://localhost:3000/explorer ⭐ Card H2
-- React Flow DAG of full NED CISE course graph
-- What-If panel → simulate failing a course → cascade effects
+### 6. Prerequisite Explorer — http://localhost:5173/#/prerequisites
+- Course dependency graph and critical path
+- What-If simulator for academic dependency tracing
 
-### 8. AI Academic Chatbot — http://localhost:3000/chat ⭐ Card H3
-- Ask: "What is the minimum CGPA to graduate?"
-- 4-layer response: preloaded → retrieval → Gemini → fallback
-- Layer indicator and source shown per answer
-- Hard 300-char input limit enforced
+### 7. GPA Calculator — http://localhost:5173/#/planner (or GPA engine)
+- Instant semester GPA & CGPA calculation based on NED grading scale
 
-### 9. GPA Calculator — http://localhost:3000/gpa
-- Enter course grades → semester GPA computed instantly
-- What-If: simulate improving a grade → see CGPA change
+### 8. Career Hub — http://localhost:5173/#/careers
+- 12 computing career tracks with milestone roadmaps
 
-### 10. Career Hub — http://localhost:3000/careers
-- 12 career tracks with skill maps
-- Track detail modal with role descriptions
-
-### 11. Admin Console — http://localhost:3000/admin *(admin only)*
-- Login as: `cursor.pro.test124@gmail.com`
-- Review queue: Extracted → Approved → Published
-- Audit log, bulk actions, deletion request processor
+### 9. Admin Console — http://localhost:5173/#/admin
+- Role-based governance console (Operator draft, Chairman sign-off, VC releases & emergency rollback)
 
 ---
 

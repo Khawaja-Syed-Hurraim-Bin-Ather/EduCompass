@@ -7,10 +7,11 @@
     "pnpm": ">=9"
   },
   "scripts": {
-    "dev": "pnpm --parallel --filter=./apps/* dev",
-    "dev:web": "pnpm --filter=@educompass/web dev",
+    "dev": "pnpm --parallel --filter=@educompass/api --filter=@educompass/frontend dev",
+    "dev:frontend": "pnpm --filter=@educompass/frontend dev",
+    "dev:web": "pnpm --filter=@educompass/frontend dev",
     "dev:api": "pnpm --filter=@educompass/api dev",
-    "build": "pnpm --filter=./packages/* build && pnpm --filter=./apps/* build",
+    "build": "pnpm --filter=./packages/* build && pnpm --filter=@educompass/api build",
     "lint": "pnpm --recursive lint",
     "typecheck": "pnpm --recursive typecheck",
     "test": "pnpm --recursive test",
@@ -20,9 +21,7 @@
   "pnpm": {
     "onlyBuiltDependencies": [
       "esbuild",
-      "unrs-resolver",
-      "@next/swc-win32-x64-msvc",
-      "sharp"
+      "unrs-resolver"
     ]
   },
   "devDependencies": {
